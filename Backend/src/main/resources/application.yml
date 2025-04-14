@@ -2,3 +2,11 @@ server:
   port: 8080
   servlet:
     context-path: /TopCV
+
+spring:
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017
+      database: topcv
+      auto-index-creation: true
