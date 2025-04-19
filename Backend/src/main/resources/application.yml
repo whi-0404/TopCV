@@ -4,9 +4,34 @@ server:
     context-path: /TopCV
 
 spring:
-
   data:
     mongodb:
       uri: mongodb://localhost:27017
       database: topcv
       auto-index-creation: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: trinhquocbao27@gmail.com
+    password: lfhlzxvvdvfiinlg
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.ssl.trust: smtp.gmail.com
+
+
+USER_FOUND:
+    User have already exists.
+
+USER_NOT_FOUND:
+  User is not registered.
+  
+INVALID_PASSWORD:
+  Invalid Credentials.
+
+OTP_NOT_FOUND:
+  OTP is not found.
+
+INVALID_OTP:
+    Invalid OTP.

@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+
 @Component
 public class SequenceGeneratorService {
 
@@ -18,7 +20,7 @@ public class SequenceGeneratorService {
 
     @Autowired
     public SequenceGeneratorService(MongoOperations mongoOperations) {
-        this.mongoOperations = mongoOperations;
+        SequenceGeneratorService.mongoOperations = mongoOperations;
     }
 
     public static long generateSequence(String seqName) throws JobportalException {
@@ -31,5 +33,16 @@ public class SequenceGeneratorService {
             throw new JobportalException("Unable to generate sequence: " + seqName);
         }
         return counter.getSeq();
+    }
+
+    public static String generateOTP()
+    {
+        StringBuilder otp = new StringBuilder();
+        SecureRandom random = new SecureRandom();
+        for (int i = 0; i < 6; i++) {
+
+            otp.append(random.nextInt(10));
+        }
+        return otp.toString();
     }
 }
