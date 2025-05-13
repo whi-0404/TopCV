@@ -1,0 +1,30 @@
+# Database Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/job_portal
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA Configuration
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# SQL Initialization
+spring.sql.init.mode=always
+spring.sql.init.continue-on-error=true
+
+# JWT Configuration
+app.jwt-secret=your_jwt_secret
+app.jwt-expiration-milliseconds=86400000
+
+# Server Configuration
+server.port=8080
+
+# Email Configuration
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your_email@gmail.com
+spring.mail.password=your_app_password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true 
