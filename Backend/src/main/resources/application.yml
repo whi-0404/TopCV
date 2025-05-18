@@ -2,3 +2,12 @@ server:
   port: 8080
   servlet:
     context-path: /TopCV
+spring:
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/TopCV"
+    username: admin
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
