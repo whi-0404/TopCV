@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="dataSourceStorageLocal" created-in="IU-243.26053.27">
+    <data-source name="TopCV@localhost" uuid="56d4b5a9-a814-4725-83cd-387373f7117f">
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="POSTGRES" />
+      <user-name>admin</user-name>
+      <schema-mapping />
+    </data-source>
+  </component>
+</project>

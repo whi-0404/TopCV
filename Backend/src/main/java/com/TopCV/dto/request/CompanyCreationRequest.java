@@ -22,14 +22,11 @@ public class CompanyCreationRequest {
 
     @Size(max = 1000)
     private String description;
-
     private String logo;
     private String website;
 
     @NotNull
     private String employeeRange;
-
-    private Integer followerCount;
 
     @Size(max = 500)
     private String address;
