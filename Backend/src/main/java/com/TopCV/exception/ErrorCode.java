@@ -26,4 +26,12 @@ public enum ErrorCode {
     private final int code;
     private final String message;
     private final HttpStatusCode statusCode;
+
+    public boolean isClientError() {
+        return statusCode.is4xxClientError();
+    }
+
+    public boolean isServerError() {
+        return statusCode.is5xxServerError();
+    }
 }
