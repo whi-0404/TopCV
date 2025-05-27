@@ -23,7 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/companies")
-@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class CompanyController {
@@ -32,35 +32,29 @@ public class CompanyController {
 
     @PostMapping
     public ApiResponse<CompanyResponse> createCompany(@RequestBody @Valid CompanyCreationRequest request) {
-        CompanyResponse createdCompany = companyService.createCompany(request);
         return ApiResponse.<CompanyResponse>builder()
-                .result(createdCompany)
+                .result(companyService.createCompany(request))
                 .build();
     }
 
     @GetMapping
     public ApiResponse<List<CompanyResponse>> getAllCompanies() {
-        List<CompanyResponse> companies = companyService.getAllCompanies();
         return ApiResponse.<List<CompanyResponse>>builder()
-                .result(companies)
-                .message("Companies retrieved successfully")
+                .result(companyService.getAllCompanies())
                 .build();
     }
 
     @GetMapping("/{id}")
     public ApiResponse<CompanyResponse> getCompanyById(@PathVariable Integer id) {
-        CompanyResponse company = companyService.getCompanyById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_FOUND));
         return ApiResponse.<CompanyResponse>builder()
-                .result(company)
+                .result(companyService.getCompanyById(id))
                 .build();
     }
 
     @PutMapping("/{id}")
     public ApiResponse<CompanyResponse> updateCompany(@PathVariable Integer id, @RequestBody @Valid CompanyUpdateRequest request) {
-        CompanyResponse updatedCompany = companyService.updateCompany(id, request);
         return ApiResponse.<CompanyResponse>builder()
-                .result(updatedCompany)
+                .result(companyService.updateCompany(id, request))
                 .build();
     }
 

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,22 +32,23 @@ public class CompanyServiceImpl implements CompanyService {
         if (companyRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.COMPANY_NAME_EXISTS);
         }
+
         Company company = companyMapper.toEntity(request);
-        Company savedCompany = companyRepository.save(company);
-        return companyMapper.toResponse(savedCompany);
+        return companyMapper.toResponse(companyRepository.save(company));
     }
 
     @Override
     public List<CompanyResponse> getAllCompanies() {
         return companyRepository.findAll().stream()
                 .map(companyMapper::toResponse)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<CompanyResponse> getCompanyById(Integer id) {
-        return companyRepository.findById(id)
-                .map(companyMapper::toResponse);
+    public CompanyResponse getCompanyById(Integer id) {
+        Company company = companyRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_FOUND));
+        return companyMapper.toResponse(company);
     }
 
     @Override
@@ -55,9 +56,9 @@ public class CompanyServiceImpl implements CompanyService {
     public CompanyResponse updateCompany(Integer id, CompanyUpdateRequest request) {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_FOUND));
+
         companyMapper.updateEntity(company, request);
-        Company updatedCompany = companyRepository.save(company);
-        return companyMapper.toResponse(updatedCompany);
+        return companyMapper.toResponse(companyRepository.save(company));
     }
 
     @Override
@@ -67,10 +68,5 @@ public class CompanyServiceImpl implements CompanyService {
             throw new AppException(ErrorCode.COMPANY_NOT_FOUND);
         }
         companyRepository.deleteById(id);
-    }
-
-    @Override
-    public boolean isCompanyNameExists(String name) {
-        return companyRepository.existsByName(name);
     }
 }

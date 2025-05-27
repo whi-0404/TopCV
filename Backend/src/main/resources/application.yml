@@ -7,7 +7,6 @@ spring:
     url: "jdbc:postgresql://localhost:5432/TopCV"
     username: admin
     password: root
-    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update

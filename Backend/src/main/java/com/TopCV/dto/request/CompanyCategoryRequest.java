@@ -8,11 +8,6 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CompanyCreationRequest {
+public class CompanyCategoryRequest {
     private String name;
-    private String description;
-    private String logo;
-    private String website;
-    private String employeeRange;
-    private String address;
 }

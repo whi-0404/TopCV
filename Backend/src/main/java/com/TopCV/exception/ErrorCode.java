@@ -18,7 +18,10 @@ public enum ErrorCode {
     ROLE_NOT_EXISTED(1008, "Role not existed", HttpStatus.BAD_REQUEST),
 
     COMPANY_NAME_EXISTS(1009, "Company name already exists", HttpStatus.BAD_REQUEST),
-    COMPANY_NOT_FOUND(1010, "Company not found", HttpStatus.NOT_FOUND);
+    COMPANY_NOT_FOUND(1010, "Company not found", HttpStatus.NOT_FOUND),
+
+    CATEGORY_NAME_EXISTS(1011, "Category name already exists", HttpStatus.BAD_REQUEST),
+    CATEGORY_NOT_FOUND(1012, "Category not found", HttpStatus.NOT_FOUND);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;
