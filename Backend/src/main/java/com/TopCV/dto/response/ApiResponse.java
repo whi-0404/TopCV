@@ -2,7 +2,7 @@ package com.TopCV.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
+        import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder
