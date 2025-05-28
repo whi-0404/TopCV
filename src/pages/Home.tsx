@@ -69,7 +69,56 @@ const mockCompanies: Company[] = [
     description: 'A leading tech company specializing in remote work solutions',
     tags: ['Technology', 'Remote Work']
   },
-  // Add more companies here
+  {
+    id: 2,
+    name: 'Nomad',
+    logo: '/images/company-logo.png',
+    location: 'Paris, France',
+    revenue: '75,000',
+    jobCount: 2,
+    description: 'Nomad tạo ra doanh thu 728.000 USD (USD)',
+    tags: ['Full Time', 'TP.HCM']
+  },
+  {
+    id: 3,
+    name: 'Nomad',
+    logo: '/images/company-logo.png',
+    location: 'Paris, France',
+    revenue: '75,000',
+    jobCount: 2,
+    description: 'Nomad tạo ra doanh thu 728.000 USD (USD)',
+    tags: ['Full Time', 'TP.HCM']
+  },
+  {
+    id: 4,
+    name: 'Nomad',
+    logo: '/images/company-logo.png',
+    location: 'Paris, France',
+    revenue: '75,000',
+    jobCount: 2,
+    description: 'Nomad tạo ra doanh thu 728.000 USD (USD)',
+    tags: ['Full Time', 'TP.HCM']
+  },
+  {
+    id: 5,
+    name: 'Nomad',
+    logo: '/images/company-logo.png',
+    location: 'Paris, France',
+    revenue: '75,000',
+    jobCount: 2,
+    description: 'Nomad tạo ra doanh thu 728.000 USD (USD)',
+    tags: ['Full Time', 'TP.HCM']
+  },
+  {
+    id: 6,
+    name: 'Nomad',
+    logo: '/images/company-logo.png',
+    location: 'Paris, France',
+    revenue: '75,000',
+    jobCount: 2,
+    description: 'Nomad tạo ra doanh thu 728.000 USD (USD)',
+    tags: ['Full Time', 'TP.HCM']
+  }
 ];
 
 const mockJobs = [
@@ -81,7 +130,46 @@ const mockJobs = [
     salary: '15-18k',
     type: 'Remote'
   },
-  // Thêm 5 jobs khác tương tự
+  {
+    id: 2,
+    title: 'Project Manager',
+    company: 'Nomad',
+    logo: '/images/company-logo.png',
+    salary: '8-15 triệu',
+    type: 'Full Time'
+  },
+  {
+    id: 3,
+    title: 'Project Manager',
+    company: 'Nomad',
+    logo: '/images/company-logo.png',
+    salary: '8-15 triệu',
+    type: 'Full Time'
+  },
+  {
+    id: 4,
+    title: 'Project Manager',
+    company: 'Nomad',
+    logo: '/images/company-logo.png',
+    salary: '8-15 triệu',
+    type: 'Full Time'
+  },
+  {
+    id: 5,
+    title: 'Project Manager',
+    company: 'Nomad',
+    logo: '/images/company-logo.png',
+    salary: '8-15 triệu',
+    type: 'Full Time'
+  },
+  {
+    id: 6,
+    title: 'Project Manager',
+    company: 'Nomad',
+    logo: '/images/company-logo.png',
+    salary: '8-15 triệu',
+    type: 'Full Time'
+  }
 ];
 
 const Home = () => {
@@ -93,13 +181,13 @@ const Home = () => {
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col items-center text-center mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+            <h1 className="hero-heading">
               Get your dream job with Find Jobs.
             </h1>
             <SearchBar />
             <div className="relative w-full max-w-3xl mt-12">
               <img 
-                src="/images/hero-illustration.svg" 
+                src="/images/hero-illustration.png" 
                 alt="Hero" 
                 className="w-full"
               />
@@ -122,7 +210,7 @@ const Home = () => {
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">IT Jobs</h2>
+            <h2 className="section-heading">IT Jobs</h2>
             <Link to="/jobs" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium px-4 py-2 rounded-full bg-emerald-50">
               View all →
             </Link>
@@ -160,7 +248,7 @@ const Home = () => {
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">IT Companies</h2>
+            <h2 className="section-heading">IT Companies</h2>
             <Link to="/companies" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium px-4 py-2 rounded-full bg-emerald-50">
               View all →
             </Link>
@@ -203,7 +291,7 @@ const Home = () => {
       {/* Blog Section */}
       <section className="py-12 px-4 bg-gray-50">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Blog</h2>
+          <h2 className="section-heading">Blog</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[1, 2, 3].map((item) => (
               <div key={item} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
@@ -228,52 +316,69 @@ const Home = () => {
       {/* Contact Section */}
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Liên hệ</h2>
-          <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <input
-                type="text"
-                placeholder="First Name*"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-            <div>
-              <input
-                type="text"
-                placeholder="Last Name*"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-            <div>
-              <input
-                type="email"
-                placeholder="Email Address*"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-            <div>
-              <input
-                type="text"
-                placeholder="Location*"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <textarea
-                placeholder="Message"
-                rows={4}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-emerald-500"
-              ></textarea>
-            </div>
-            <div className="md:col-span-2 flex justify-end">
-              <button
-                type="submit"
-                className="px-8 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-              >
-                Apply Now
-              </button>
-            </div>
-          </form>
+          <h2 className="section-heading">Liên hệ</h2>
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  First Name<span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="First Name*"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Last Name<span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Last Name*"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address<span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  placeholder="Email Address*"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Location<span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Location*"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Message
+                </label>
+                <textarea
+                  placeholder="Message"
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                ></textarea>
+              </div>
+              <div className="md:col-span-2 flex justify-end">
+                <button
+                  type="submit"
+                  className="px-8 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+                >
+                  Apply Now
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </section>
 

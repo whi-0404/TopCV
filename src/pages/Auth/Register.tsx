@@ -86,7 +86,7 @@ const Register = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-[32px] font-bold text-[#1F2937] mb-8"
+            className="auth-heading"
           >
             Create an account
           </motion.h1>
@@ -127,6 +127,21 @@ const Register = () => {
                 id="name"
                 name="name"
                 placeholder="Enter your full name"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+            >
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                User Name
+              </label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter your username"
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </motion.div>

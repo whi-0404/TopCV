@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Marmelad&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,8 +6,8 @@
 :root {
   --primary-color: #4F46E5;
   --primary-hover: #4338CA;
-  --secondary-color: #10B981;
-  --secondary-hover: #059669;
+  --secondary-color: #3C7363;
+  --secondary-hover: #2D5A4F;
   --background-color: #F9FAFB;
   --text-primary: #111827;
   --text-secondary: #4B5563;
@@ -51,6 +52,24 @@ body {
 
   .section-subtitle {
     @apply text-lg text-gray-600 mb-6;
+  }
+
+  .section-heading {
+    @apply text-2xl font-bold mb-8;
+    font-family: 'Marmelad', sans-serif;
+    color: #1B4629;
+  }
+
+  .hero-heading {
+    @apply text-3xl md:text-4xl font-bold mb-6;
+    font-family: 'Marmelad', sans-serif;
+    color: #1B4629;
+  }
+
+  .auth-heading {
+    @apply text-[32px] font-bold mb-8;
+    font-family: 'Marmelad', sans-serif;
+    color: #1B4629;
   }
 }
 

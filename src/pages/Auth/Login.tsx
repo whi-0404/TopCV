@@ -86,7 +86,7 @@ const Login = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-[32px] font-bold text-[#1F2937] mb-8"
+            className="auth-heading"
           >
             Welcome back
           </motion.h1>

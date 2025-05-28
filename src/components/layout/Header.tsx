@@ -20,7 +20,7 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <img src="/images/download.jpg" alt="TopJob" className="h-8 w-auto" />
-            <span className="text-xl font-bold" style={{ color: '#2F855A' }}>Top<span style={{ color: '#48BB78' }}>Job</span></span>
+            <span className="text-xl font-bold" style={{ color: '#3C7363' }}>Top<span style={{ color: '#84D9B3' }}>Job</span></span>
           </Link>
 
           {/* Desktop Navigation */}
