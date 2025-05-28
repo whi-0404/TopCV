@@ -21,7 +21,10 @@ public enum ErrorCode {
     COMPANY_NOT_FOUND(1010, "Company not found", HttpStatus.NOT_FOUND),
 
     CATEGORY_NAME_EXISTS(1011, "Category name already exists", HttpStatus.BAD_REQUEST),
-    CATEGORY_NOT_FOUND(1012, "Category not found", HttpStatus.NOT_FOUND);
+    CATEGORY_NOT_FOUND(1012, "Category not found", HttpStatus.NOT_FOUND),
+
+    TYPE_NAME_EXISTS(1013, "Job type name already exists", HttpStatus.BAD_REQUEST),
+    TYPE_NOT_FOUND(1014, "Job type not found", HttpStatus.NOT_FOUND);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;
