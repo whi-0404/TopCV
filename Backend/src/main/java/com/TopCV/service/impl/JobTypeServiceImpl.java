@@ -45,7 +45,7 @@ public class JobTypeServiceImpl implements JobTypeService {
     @Override
     public JobTypeResponse getJobTypeById(Integer id) {
         JobType jobType = jobTypeRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.TYPE_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.TYPE_NOT_EXISTS));
         return jobTypeMapper.toResponse(jobType);
     }
 
@@ -53,7 +53,7 @@ public class JobTypeServiceImpl implements JobTypeService {
     @Transactional
     public JobTypeResponse updateJobType(Integer typeId, JobTypeRequest request) {
         JobType jobType = jobTypeRepository.findById(typeId)
-                .orElseThrow(() -> new AppException(ErrorCode.TYPE_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.TYPE_NOT_EXISTS));
         jobTypeMapper.updateEntity(jobType, request);
         return jobTypeMapper.toResponse(jobTypeRepository.save(jobType));
     }
@@ -62,7 +62,7 @@ public class JobTypeServiceImpl implements JobTypeService {
     @Transactional
     public void deleteJobType(Integer typeId) {
         if (!jobTypeRepository.existsById(typeId)) {
-            throw new AppException(ErrorCode.TYPE_NOT_FOUND);
+            throw new AppException(ErrorCode.TYPE_NOT_EXISTS);
         }
         jobTypeRepository.deleteById(typeId);
     }

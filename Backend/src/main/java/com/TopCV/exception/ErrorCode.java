@@ -18,16 +18,20 @@ public enum ErrorCode {
     ROLE_NOT_EXISTED(1008, "Role not existed", HttpStatus.BAD_REQUEST),
 
     COMPANY_NAME_EXISTS(1009, "Company name already exists", HttpStatus.BAD_REQUEST),
-    COMPANY_NOT_FOUND(1010, "Company not found", HttpStatus.NOT_FOUND),
+    COMPANY_NOT_EXISTS(1010, "Company not exists", HttpStatus.BAD_REQUEST),
 
     CATEGORY_NAME_EXISTS(1011, "Category name already exists", HttpStatus.BAD_REQUEST),
-    CATEGORY_NOT_FOUND(1012, "Category not found", HttpStatus.NOT_FOUND),
+    CATEGORY_NOT_EXISTS(1012, "Category not exists", HttpStatus.BAD_REQUEST),
 
     TYPE_NAME_EXISTS(1013, "Job type name already exists", HttpStatus.BAD_REQUEST),
-    TYPE_NOT_FOUND(1014, "Job type not found", HttpStatus.NOT_FOUND),
+    TYPE_NOT_EXISTS(1014, "Job type not exists", HttpStatus.BAD_REQUEST),
 
     LEVEL_NAME_EXISTS(1015, "Job level name already exists", HttpStatus.BAD_REQUEST),
-    LEVEL_NOT_FOUND(1016, "Job level not found", HttpStatus.NOT_FOUND);
+    LEVEL_NOT_EXISTS(1016, "Job level not exists", HttpStatus.BAD_REQUEST),
+
+    REVIEW_ALREADY_EXISTS(1017, "Review already exists", HttpStatus.BAD_REQUEST),
+    REVIEW_NOT_EXISTS(1018, "Review not exists", HttpStatus.BAD_REQUEST);
+
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

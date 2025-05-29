@@ -47,7 +47,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public CompanyResponse getCompanyById(Integer id) {
         Company company = companyRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_EXISTS));
         return companyMapper.toResponse(company);
     }
 
@@ -55,7 +55,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Transactional
     public CompanyResponse updateCompany(Integer id, CompanyUpdateRequest request) {
         Company company = companyRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_EXISTS));
 
         companyMapper.updateEntity(company, request);
         return companyMapper.toResponse(companyRepository.save(company));
@@ -65,7 +65,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Transactional
     public void deleteCompany(Integer id) {
         if (!companyRepository.existsById(id)) {
-            throw new AppException(ErrorCode.COMPANY_NOT_FOUND);
+            throw new AppException(ErrorCode.COMPANY_NOT_EXISTS);
         }
         companyRepository.deleteById(id);
     }

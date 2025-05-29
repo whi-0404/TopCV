@@ -47,7 +47,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
     @Override
     public CompanyCategoryResponse getCompanyCategoryById(Integer id) {
         CompanyCategory category = companyCategoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTS));
         return companyCategoryMapper.toResponse(category);
     }
 
@@ -55,7 +55,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
     @Transactional
     public CompanyCategoryResponse updateCompanyCategory(Integer category_id, CompanyCategoryRequest request) {
         CompanyCategory category = companyCategoryRepository.findById(category_id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTS));
 
         companyCategoryMapper.updateEntity(category, request);
         return companyCategoryMapper.toResponse(companyCategoryRepository.save(category));
@@ -65,7 +65,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
     @Transactional
     public void deleteCompanyCategory(Integer category_id) {
         if (!companyCategoryRepository.existsById(category_id)) {
-            throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
+            throw new AppException(ErrorCode.CATEGORY_NOT_EXISTS);
         }
         companyCategoryRepository.deleteById(category_id);
     }

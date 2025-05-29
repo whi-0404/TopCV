@@ -45,7 +45,7 @@ public class JobLevelServiceImpl implements JobLevelService {
     @Override
     public JobLevelResponse getJobLevelById(Integer id) {
         JobLevel jobLevel = jobLevelRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.LEVEL_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.LEVEL_NOT_EXISTS));
         return jobLevelMapper.toResponse(jobLevel);
     }
 
@@ -53,7 +53,7 @@ public class JobLevelServiceImpl implements JobLevelService {
     @Transactional
     public JobLevelResponse updateJobLevel(Integer levelId, JobLevelRequest request) {
         JobLevel jobLevel = jobLevelRepository.findById(levelId)
-                .orElseThrow(() -> new AppException(ErrorCode.LEVEL_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.LEVEL_NOT_EXISTS));
         jobLevelMapper.updateEntity(jobLevel, request);
         return jobLevelMapper.toResponse(jobLevelRepository.save(jobLevel));
     }
@@ -62,7 +62,7 @@ public class JobLevelServiceImpl implements JobLevelService {
     @Transactional
     public void deleteJobLevel(Integer levelId) {
         if (!jobLevelRepository.existsById(levelId)) {
-            throw new AppException(ErrorCode.LEVEL_NOT_FOUND);
+            throw new AppException(ErrorCode.LEVEL_NOT_EXISTS);
         }
         jobLevelRepository.deleteById(levelId);
     }

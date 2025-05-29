@@ -47,7 +47,7 @@ public class JobCategoryServiceImpl implements JobCategoryService {
     @Override
     public JobCategoryResponse getJobCategoryById(Integer id) {
         JobCategory category = jobCategoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTS));
         return jobCategoryMapper.toResponse(category);
     }
 
@@ -55,7 +55,7 @@ public class JobCategoryServiceImpl implements JobCategoryService {
     @Transactional
     public JobCategoryResponse updateJobCategory(Integer categoryId, JobCategoryRequest request) {
         JobCategory category = jobCategoryRepository.findById(categoryId)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTS));
 
         jobCategoryMapper.updateEntity(category, request);
         return jobCategoryMapper.toResponse(jobCategoryRepository.save(category));
@@ -65,7 +65,7 @@ public class JobCategoryServiceImpl implements JobCategoryService {
     @Transactional
     public void deleteJobCategory(Integer categoryId) {
         if (!jobCategoryRepository.existsById(categoryId)) {
-            throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
+            throw new AppException(ErrorCode.CATEGORY_NOT_EXISTS);
         }
         jobCategoryRepository.deleteById(categoryId);
     }
