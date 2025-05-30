@@ -3,6 +3,7 @@ package com.TopCV.configuration.SecurityConfig;
 import com.TopCV.dto.request.IntrospectRequest;
 import com.TopCV.exception.JwtAuthenticationException;
 import com.TopCV.service.impl.AuthenticationServiceImpl;
+import com.nimbusds.jose.JOSEException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.text.ParseException;
 import java.util.Objects;
 
 @Component
@@ -30,15 +32,11 @@ public class CustomJwtDecoder implements JwtDecoder {
     @Override
     public Jwt decode(String token) throws JwtException {
 
-        try {
-            var response = authenticationService.introspect(
-                    IntrospectRequest.builder().token(token).build());
+        var response = authenticationService.introspect(
+                IntrospectRequest.builder().token(token).build());
 
-            if (!response.isValid()) {
-                throw new JwtAuthenticationException(response.getErrorCode());
-            }
-        } catch (Exception   e) {
-            throw new JwtException(e.getMessage());
+        if (!response.isValid()) {
+            throw new JwtAuthenticationException(response.getErrorCode());
         }
 
         if (Objects.isNull(nimbusJwtDecoder)) {

@@ -230,12 +230,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             SignedJWT signedJWT = SignedJWT.parse(token);
             Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
-            if (!signedJWT.verify(verifier)) {
-                throw new AppException(ErrorCode.UNAUTHENTICATED);
-            }
 
             if (!expiryTime.after(new Date())) {
                 throw new AppException(ErrorCode.EXPIRED_TOKEN);
+            }
+
+            if (!signedJWT.verify(verifier)) {
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
             }
 
             if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {
@@ -243,7 +244,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }
 
             return signedJWT;
-        } catch (JOSEException | ParseException e) {
+        }
+        catch (AppException e){
+            throw e;
+        }
+        catch (JOSEException | ParseException e) {
             throw new AppException(ErrorCode.UNAUTHENTICATED, e);
         }
     }
