@@ -9,7 +9,23 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Xử lý đăng ký ở đây
+      const formData = new FormData(e.target as HTMLFormElement);
+      const name = formData.get('name') as string;
+      const email = formData.get('email') as string;
+      
+      // Giả lập đăng ký thành công
+      const userData = {
+        id: Date.now(), // Sử dụng timestamp làm id đơn giản
+        email: email,
+        name: name,
+        userType: userType,
+        isLoggedIn: true
+      };
+      
+      // Lưu thông tin user vào localStorage
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Chuyển về trang chủ
       navigate('/', { state: { visited: true } });
     } catch (error) {
       console.error('Register error:', error);
@@ -62,7 +78,7 @@ const Register = () => {
               onClick={() => setUserType('jobseeker')}
               className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                 userType === 'jobseeker'
-                  ? 'bg-[#EEF2FF] text-[#4F46E5]'
+                  ? 'bg-emerald-200 text-emerald-700'
                   : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -74,7 +90,7 @@ const Register = () => {
               onClick={() => setUserType('company')}
               className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                 userType === 'company'
-                  ? 'bg-[#EEF2FF] text-[#4F46E5]'
+                  ? 'bg-emerald-200 text-emerald-700'
                   : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -134,21 +150,6 @@ const Register = () => {
             <motion.div
               whileHover={{ scale: 1.01 }}
             >
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                User Name
-              </label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                placeholder="Enter your username"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.01 }}
-            >
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email
               </label>
@@ -176,11 +177,26 @@ const Register = () => {
               />
             </motion.div>
 
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+            >
+              <label htmlFor="repeatPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                Repeat Password
+              </label>
+              <input
+                type="password"
+                id="repeatPassword"
+                name="repeatPassword"
+                placeholder="Repeat your password"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </motion.div>
+
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              className="w-full bg-[#9FE2BF] text-emerald-700 rounded-lg p-3 font-medium hover:bg-emerald-200"
+              className="w-full bg-emerald-600 text-white rounded-lg p-3 font-medium hover:bg-emerald-700"
             >
               Continue
             </motion.button>

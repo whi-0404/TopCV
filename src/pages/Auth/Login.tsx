@@ -9,7 +9,22 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Xử lý đăng nhập ở đây
+      const formData = new FormData(e.target as HTMLFormElement);
+      const email = formData.get('email') as string;
+      
+      // Giả lập đăng nhập thành công
+      const userData = {
+        id: 1,
+        email: email,
+        name: email.split('@')[0], // Lấy tên từ email
+        userType: userType,
+        isLoggedIn: true
+      };
+      
+      // Lưu thông tin user vào localStorage
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Chuyển về trang chủ
       navigate('/', { state: { visited: true } });
     } catch (error) {
       console.error('Login error:', error);
@@ -62,7 +77,7 @@ const Login = () => {
               onClick={() => setUserType('jobseeker')}
               className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                 userType === 'jobseeker'
-                  ? 'bg-[#EEF2FF] text-[#4F46E5]'
+                  ? 'bg-emerald-200 text-emerald-700'
                   : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -74,7 +89,7 @@ const Login = () => {
               onClick={() => setUserType('company')}
               className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                 userType === 'company'
-                  ? 'bg-[#EEF2FF] text-[#4F46E5]'
+                  ? 'bg-emerald-200 text-emerald-700'
                   : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -165,7 +180,7 @@ const Login = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              className="w-full bg-[#9FE2BF] text-emerald-700 rounded-lg p-3 font-medium hover:bg-emerald-200"
+              className="w-full bg-emerald-600 text-white rounded-lg p-3 font-medium hover:bg-emerald-700"
             >
               Sign in
             </motion.button>

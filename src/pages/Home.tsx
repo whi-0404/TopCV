@@ -62,7 +62,7 @@ const mockCompanies: Company[] = [
   {
     id: 1,
     name: 'Nomad',
-    logo: '/images/company-logo.png',
+    logo: '/images/nomad-logo.svg',
     location: 'Paris, France',
     revenue: '75,000',
     jobCount: 2,
@@ -72,7 +72,7 @@ const mockCompanies: Company[] = [
   {
     id: 2,
     name: 'Nomad',
-    logo: '/images/company-logo.png',
+    logo: '/images/nomad-logo.svg',
     location: 'Paris, France',
     revenue: '75,000',
     jobCount: 2,
@@ -82,7 +82,7 @@ const mockCompanies: Company[] = [
   {
     id: 3,
     name: 'Nomad',
-    logo: '/images/company-logo.png',
+    logo: '/images/nomad-logo.svg',
     location: 'Paris, France',
     revenue: '75,000',
     jobCount: 2,
@@ -92,7 +92,7 @@ const mockCompanies: Company[] = [
   {
     id: 4,
     name: 'Nomad',
-    logo: '/images/company-logo.png',
+    logo: '/images/nomad-logo.svg',
     location: 'Paris, France',
     revenue: '75,000',
     jobCount: 2,
@@ -102,7 +102,7 @@ const mockCompanies: Company[] = [
   {
     id: 5,
     name: 'Nomad',
-    logo: '/images/company-logo.png',
+    logo: '/images/nomad-logo.svg',
     location: 'Paris, France',
     revenue: '75,000',
     jobCount: 2,
@@ -112,7 +112,7 @@ const mockCompanies: Company[] = [
   {
     id: 6,
     name: 'Nomad',
-    logo: '/images/company-logo.png',
+    logo: '/images/nomad-logo.svg',
     location: 'Paris, France',
     revenue: '75,000',
     jobCount: 2,
@@ -126,49 +126,49 @@ const mockJobs = [
     id: 1,
     title: 'Project Manager',
     company: 'Nomad',
-    logo: '/images/company-logo.png',
+    logo: '/images/nomad-logo.svg',
     salary: '15-18k',
     type: 'Remote'
   },
   {
     id: 2,
-    title: 'Project Manager',
-    company: 'Nomad',
-    logo: '/images/company-logo.png',
-    salary: '8-15 triệu',
+    title: 'Frontend Developer',
+    company: 'Discord',
+    logo: '/images/discord-logo.svg',
+    salary: '12-20k',
     type: 'Full Time'
   },
   {
     id: 3,
-    title: 'Project Manager',
-    company: 'Nomad',
-    logo: '/images/company-logo.png',
-    salary: '8-15 triệu',
+    title: 'UX/UI Designer',
+    company: 'Maze',
+    logo: '/images/maze-logo.svg',
+    salary: '10-15k',
     type: 'Full Time'
   },
   {
     id: 4,
-    title: 'Project Manager',
-    company: 'Nomad',
-    logo: '/images/company-logo.png',
-    salary: '8-15 triệu',
-    type: 'Full Time'
+    title: 'Data Scientist',
+    company: 'Udacity',
+    logo: '/images/udacity-logo.svg',
+    salary: '18-25k',
+    type: 'Remote'
   },
   {
     id: 5,
-    title: 'Project Manager',
-    company: 'Nomad',
-    logo: '/images/company-logo.png',
-    salary: '8-15 triệu',
+    title: 'Product Designer',
+    company: 'Webflow',
+    logo: '/images/webflow-logo.svg',
+    salary: '14-22k',
     type: 'Full Time'
   },
   {
     id: 6,
-    title: 'Project Manager',
-    company: 'Nomad',
-    logo: '/images/company-logo.png',
-    salary: '8-15 triệu',
-    type: 'Full Time'
+    title: 'Blockchain Developer',
+    company: 'Foundation',
+    logo: '/images/foundation-logo.svg',
+    salary: '20-30k',
+    type: 'Remote'
   }
 ];
 
@@ -316,7 +316,7 @@ const Home = () => {
       {/* Contact Section */}
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="section-heading">Liên hệ</h2>
+          <h2 className="section-heading">Contact Us</h2>
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
