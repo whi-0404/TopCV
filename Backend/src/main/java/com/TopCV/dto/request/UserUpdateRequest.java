@@ -1,6 +1,5 @@
-package com.TopCV.dto.response;
+package com.TopCV.dto.request;
 
-import com.TopCV.enums.Role;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,18 +10,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponse {
-    String id;
+public class UserUpdateRequest {
     String userName;
-    String email;
-    String fullname;
+
+    String fullName;
+
     String phone;
+
     String address;
+
     String avt;
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
-    boolean isActive;
-    boolean isEmailVerified;
+
     LocalDateTime dob;
-    Role role;
 }

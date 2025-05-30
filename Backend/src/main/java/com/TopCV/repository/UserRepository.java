@@ -18,7 +18,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByUserName(String username);
     Optional<User> findByEmail(String email);
 
-    boolean existsByUserName(String username);
     boolean existsByEmail(String email);
 
     @Query("SELECT u FROM User u WHERE " +
@@ -29,7 +28,6 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     Page<User> findByActiveTrue(Pageable pageable);
 
-    Page<User> findByEmailVerified(boolean isEmailVerified, Pageable pageable);
 
     @Modifying
     @Query("UPDATE User u SET u.password = :password, u.updatedAt = :updatedAt WHERE u.email = :email")
@@ -38,12 +36,6 @@ public interface UserRepository extends JpaRepository<User, String> {
                                @Param("updatedAt") LocalDateTime updatedAt);
 
     @Modifying
-    @Query("UPDATE User u SET u.isEmailVerified = :isVerified, u.updatedAt = :updatedAt WHERE u.email = :email")
-    void updateEmailVerificationStatus(@Param("email") String email,
-                                       @Param("isVerified") boolean isVerified,
-                                       @Param("updatedAt") LocalDateTime updatedAt);
-
-    @Modifying
-    @Query("UPDATE User u SET u.isActive = false, u.updatedAt = :updatedAt WHERE u.id = :userId")
+    @Query("UPDATE User u SET u.active = false, u.updatedAt = :updatedAt WHERE u.id = :userId")
     void deactivateUser(@Param("userId") String userId, @Param("updatedAt") LocalDateTime updatedAt);
 }
