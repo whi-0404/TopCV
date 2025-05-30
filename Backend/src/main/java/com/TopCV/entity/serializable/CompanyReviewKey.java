@@ -14,5 +14,5 @@ import java.io.Serializable;
 @Embeddable
 public class CompanyReviewKey implements Serializable {
     Integer companyId;
-    Integer userId;
+    String userId;
 }

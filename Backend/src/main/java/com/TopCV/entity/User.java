@@ -18,14 +18,15 @@ import java.util.List;
 @Table(name = "users")
 public class User {
         @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        int id;
+        @GeneratedValue(strategy = GenerationType.UUID)
+        String id;
 
-        @Column(name = "user_name")
+        @Column(name = "user_name", unique = true)
         String userName;
 
         String password;
 
+        @Column(unique = true)
         String email;
 
         @Column(name = "full_name")
@@ -44,7 +45,11 @@ public class User {
         LocalDateTime updatedAt;
 
         @Column(name = "is_active")
-        boolean isActive;
+        @Builder.Default
+        boolean active = true;
+
+        @Column(name = "is_email_verified")
+        boolean emailVerified;
 
         LocalDateTime dob;
 
@@ -71,7 +76,9 @@ public class User {
         @OneToMany(mappedBy = "user")
         List<Resumes> resumes;
 
-        Role role;
+        @Enumerated(EnumType.STRING)
+        @Builder.Default
+        Role role = Role.USER;
 
         @PrePersist
         void createdAt() {
