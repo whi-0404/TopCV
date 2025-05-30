@@ -41,7 +41,7 @@ public class CompanyReviewServiceImpl implements CompanyReviewService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         if (!companyRepository.existsById(request.getCompanyId())) {
-            throw new AppException(ErrorCode.COMPANY_NOT_EXISTS);
+            throw new AppException(ErrorCode.COMPANY_NOT_EXISTED);
         }
 
         CompanyReviewKey reviewKey = new CompanyReviewKey();
@@ -49,7 +49,7 @@ public class CompanyReviewServiceImpl implements CompanyReviewService {
         reviewKey.setCompanyId(request.getCompanyId());
 
         if (reviewRepository.existsById(reviewKey)) {
-            throw new AppException(ErrorCode.REVIEW_ALREADY_EXISTS);
+            throw new AppException(ErrorCode.REVIEW_ALREADY_EXISTED);
         }
 
         CompanyReview review = reviewMapper.toEntity(request);
@@ -64,7 +64,7 @@ public class CompanyReviewServiceImpl implements CompanyReviewService {
     @Transactional(readOnly = true)
     public List<CompanyReviewResponse> getReviewsByCompanyId(Integer companyId) {
         if (!companyRepository.existsById(companyId)) {
-            throw new AppException(ErrorCode.COMPANY_NOT_EXISTS);
+            throw new AppException(ErrorCode.COMPANY_NOT_EXISTED);
         }
 
         List<CompanyReview> reviews = reviewRepository.findByCompanyId(companyId);
@@ -80,7 +80,7 @@ public class CompanyReviewServiceImpl implements CompanyReviewService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         if (!companyRepository.existsById(request.getCompanyId())) {
-            throw new AppException(ErrorCode.COMPANY_NOT_EXISTS);
+            throw new AppException(ErrorCode.COMPANY_NOT_EXISTED);
         }
 
         CompanyReviewKey reviewKey = new CompanyReviewKey();
@@ -88,7 +88,7 @@ public class CompanyReviewServiceImpl implements CompanyReviewService {
         reviewKey.setCompanyId(request.getCompanyId());
 
         CompanyReview review = reviewRepository.findById(reviewKey)
-                .orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_EXISTS));
+                .orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_EXISTED));
 
         review.setRateStar(request.getRateStar());
         review.setReviewText(request.getReviewText());
