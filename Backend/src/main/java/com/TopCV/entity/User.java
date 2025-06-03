@@ -53,8 +53,8 @@ public class User {
 
         LocalDateTime dob;
 
-        @OneToOne(mappedBy = "user")
-        Company company;
+//        @OneToOne(mappedBy = "user")
+//        Company company;
 
         @ManyToMany
         @JoinTable(
@@ -77,8 +77,7 @@ public class User {
         List<Resumes> resumes;
 
         @Enumerated(EnumType.STRING)
-        @Builder.Default
-        Role role = Role.USER;
+        Role role;
 
         @PrePersist
         void createdAt() {

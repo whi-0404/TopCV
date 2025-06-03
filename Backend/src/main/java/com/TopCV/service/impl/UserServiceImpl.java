@@ -8,6 +8,7 @@ import com.TopCV.dto.response.PageResponse;
 import com.TopCV.dto.response.RegistrationResponse;
 import com.TopCV.entity.User;
 import com.TopCV.enums.OtpType;
+import com.TopCV.enums.Role;
 import com.TopCV.service.EmailService;
 import com.TopCV.service.redis.UserRedisService;
 import lombok.AccessLevel;
@@ -55,6 +56,7 @@ public class UserServiceImpl implements UserService {
                 .email(request.getEmail())
                 .fullname(request.getFullname())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .role(request.getRole())
                 .build();
 
         String keyRedisToken = userRedisService.saveTemporaryRegistration(encryptedRequest);
@@ -180,6 +182,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userMapper.toEntity(registrationData);
         user.setEmailVerified(true);
+        user.setRole(Role.valueOf(registrationData.getRole()));
 
         User savedUser = userRepository.save(user);
 

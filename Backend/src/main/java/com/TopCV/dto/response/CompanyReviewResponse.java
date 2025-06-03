@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CompanyReviewResponse {
-    Integer userId;
-    String email;
+    String userId;
+    String fullName;
     String reviewText;
     int rateStar;
     LocalDateTime reviewDate;

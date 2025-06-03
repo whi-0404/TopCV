@@ -4,12 +4,13 @@ import com.TopCV.dto.request.UserCreationRequest;
 import com.TopCV.dto.request.UserUpdateRequest;
 import com.TopCV.dto.response.UserResponse;
 import com.TopCV.entity.User;
+import com.TopCV.enums.Role;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-05-29T21:23:42+0700",
+    date = "2025-06-02T16:41:13+0700",
     comments = "version: 1.6.2, compiler: javac, environment: Java 23 (Oracle Corporation)"
 )
 @Component
@@ -26,6 +27,9 @@ public class UserMapperImpl implements UserMapper {
         user.password( request.getPassword() );
         user.email( request.getEmail() );
         user.fullname( request.getFullname() );
+        if ( request.getRole() != null ) {
+            user.role( Enum.valueOf( Role.class, request.getRole() ) );
+        }
 
         return user.build();
     }

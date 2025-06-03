@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Component
 public class CompanyReviewMapperImpl implements CompanyReviewMapper {
-    CompanyRepository companyRepository;
 
     public CompanyReview toEntity(CompanyReviewRequest request) {
         if (request == null) {
@@ -34,9 +33,10 @@ public class CompanyReviewMapperImpl implements CompanyReviewMapper {
         } else {
             CompanyReviewResponse.CompanyReviewResponseBuilder response = CompanyReviewResponse.builder();
             response.userId(this.reviewUserId(companyReview));
-            response.email(this.userEmail(companyReview));
+            response.fullName(this.fullName(companyReview));
             response.reviewText(companyReview.getReviewText());
             response.rateStar(companyReview.getRateStar());
+            response.reviewDate(companyReview.getReviewDate());
             return response.build();
         }
     }
@@ -53,7 +53,7 @@ public class CompanyReviewMapperImpl implements CompanyReviewMapper {
         }
     }
 
-    private Integer reviewUserId(CompanyReview review) {
+    private String reviewUserId(CompanyReview review) {
         if (review == null) {
             return null;
         } else {
@@ -66,7 +66,7 @@ public class CompanyReviewMapperImpl implements CompanyReviewMapper {
         }
     }
 
-    private String userEmail(CompanyReview review) {
+    private String fullName(CompanyReview review) {
         if (review == null) {
             return null;
         } else {
@@ -74,7 +74,7 @@ public class CompanyReviewMapperImpl implements CompanyReviewMapper {
             if (user == null) {
                 return null;
             } else {
-                return user.getEmail();
+                return user.getFullname();
             }
         }
     }

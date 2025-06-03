@@ -12,6 +12,7 @@ import com.TopCV.service.CompanyCategoryService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ public class CompanyCategoryServiceImpl implements CompanyCategoryService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public CompanyCategoryResponse createCompanyCategory(CompanyCategoryRequest request) {
         if (companyCategoryRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.CATEGORY_NAME_EXISTED);

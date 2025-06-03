@@ -11,6 +11,7 @@ import com.TopCV.service.JobTypeService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ public class JobTypeServiceImpl implements JobTypeService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public JobTypeResponse createJobType(JobTypeRequest request) {
         if (jobTypeRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.TYPE_NAME_EXISTED);
@@ -51,6 +53,7 @@ public class JobTypeServiceImpl implements JobTypeService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public JobTypeResponse updateJobType(Integer typeId, JobTypeRequest request) {
         JobType jobType = jobTypeRepository.findById(typeId)
                 .orElseThrow(() -> new AppException(ErrorCode.TYPE_NOT_EXISTED));
@@ -60,6 +63,7 @@ public class JobTypeServiceImpl implements JobTypeService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteJobType(Integer typeId) {
         if (!jobTypeRepository.existsById(typeId)) {
             throw new AppException(ErrorCode.TYPE_NOT_EXISTED);

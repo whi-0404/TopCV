@@ -8,6 +8,7 @@ import com.TopCV.dto.response.ApiResponse;
 import com.TopCV.dto.response.PageResponse;
 import com.TopCV.dto.response.RegistrationResponse;
 import com.TopCV.dto.response.UserResponse;
+import com.TopCV.enums.Role;
 import com.TopCV.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ApiResponse<RegistrationResponse> createUser(@Valid @RequestBody UserCreationRequest request) {
+        request.setRole(Role.USER.toString());
         return ApiResponse.<RegistrationResponse>builder()
                 .result(userService.createUser(request))
                 .build();

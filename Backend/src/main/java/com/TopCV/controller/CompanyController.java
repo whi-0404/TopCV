@@ -1,10 +1,11 @@
 package com.TopCV.controller;
 
 import com.TopCV.dto.request.CompanyCreationRequest;
-import com.TopCV.dto.request.CompanyUpdateRequest;
 import com.TopCV.dto.response.ApiResponse;
+import com.TopCV.dto.response.CompanyDashboardResponse;
 import com.TopCV.dto.response.CompanyResponse;
 
+import com.TopCV.dto.response.PageResponse;
 import com.TopCV.service.CompanyService;
 import com.TopCV.exception.AppException;
 import com.TopCV.exception.ErrorCode;
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/companies")
+@RequestMapping("/api/v1/companies")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
@@ -38,9 +39,10 @@ public class CompanyController {
     }
 
     @GetMapping
-    public ApiResponse<List<CompanyResponse>> getAllCompanies() {
-        return ApiResponse.<List<CompanyResponse>>builder()
-                .result(companyService.getAllCompanies())
+    public ApiResponse<PageResponse<CompanyDashboardResponse>> getAllCompanies(@RequestParam(value = "page", defaultValue = "1") int page,
+                                                                               @RequestParam(value = "size", defaultValue = "10") int size) {
+        return ApiResponse.<PageResponse<CompanyDashboardResponse>>builder()
+                .result(companyService.getDashBoardCompany(page, size))
                 .build();
     }
 
@@ -52,7 +54,7 @@ public class CompanyController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<CompanyResponse> updateCompany(@PathVariable Integer id, @RequestBody @Valid CompanyUpdateRequest request) {
+    public ApiResponse<CompanyResponse> updateCompany(@PathVariable Integer id, @RequestBody @Valid CompanyCreationRequest request) {
         return ApiResponse.<CompanyResponse>builder()
                 .result(companyService.updateCompany(id, request))
                 .build();
@@ -63,6 +65,22 @@ public class CompanyController {
         companyService.deleteCompany(id);
         return ApiResponse.<String>builder()
                 .result("Company has been deleted")
+                .build();
+    }
+
+    @PostMapping("/{id}/activate")
+    public ApiResponse<String> activateCompany(@PathVariable Integer id){
+        companyService.activateCompany(id);
+        return ApiResponse.<String>builder()
+                .result("Company has been activated")
+                .build();
+    }
+
+    @PostMapping("/{id}/deactivate")
+    public ApiResponse<String> deactivateCompany(@PathVariable Integer id){
+        companyService.deactivateCompany(id);
+        return ApiResponse.<String>builder()
+                .result("Company has been deactivated")
                 .build();
     }
 }

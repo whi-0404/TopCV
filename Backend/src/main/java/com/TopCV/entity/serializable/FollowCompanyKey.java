@@ -13,6 +13,6 @@ import java.io.Serializable;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Embeddable
 public class FollowCompanyKey implements Serializable {
-    Integer userId;
+    String userId;
     Integer companyId;
 }

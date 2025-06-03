@@ -11,6 +11,7 @@ import com.TopCV.service.JobLevelService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ public class JobLevelServiceImpl implements JobLevelService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public JobLevelResponse createJobLevel(JobLevelRequest request) {
         if (jobLevelRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.LEVEL_NAME_EXISTED);
@@ -51,6 +53,7 @@ public class JobLevelServiceImpl implements JobLevelService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public JobLevelResponse updateJobLevel(Integer levelId, JobLevelRequest request) {
         JobLevel jobLevel = jobLevelRepository.findById(levelId)
                 .orElseThrow(() -> new AppException(ErrorCode.LEVEL_NOT_EXISTED));
@@ -60,6 +63,7 @@ public class JobLevelServiceImpl implements JobLevelService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteJobLevel(Integer levelId) {
         if (!jobLevelRepository.existsById(levelId)) {
             throw new AppException(ErrorCode.LEVEL_NOT_EXISTED);

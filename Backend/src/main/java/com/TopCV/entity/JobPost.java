@@ -6,6 +6,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -35,8 +37,7 @@ public class JobPost {
     @Column(name = "working_time", columnDefinition = "TEXT")
     String workingTime;
 
-    @Column(name = "salary_range")
-    String salaryRange;
+    String salary;
 
     @Column(name = "experience_required")
     String experienceRequired;
@@ -56,16 +57,19 @@ public class JobPost {
     Company company;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    JobCategory category;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_type_id")
     JobType type;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_level_id")
     JobLevel level;
+
+    @ManyToMany
+    @JoinTable(
+            name = "job_skills",
+            joinColumns = @JoinColumn(name = "job_id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id"))
+    List<Skill> skills = new ArrayList<>();
 
     @Column(name = "created_at")
     LocalDateTime createdAt;

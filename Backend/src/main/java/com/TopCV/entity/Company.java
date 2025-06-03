@@ -1,9 +1,12 @@
 package com.TopCV.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -37,14 +40,37 @@ public class Company {
 
     String address;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    CompanyCategory category;
-
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     User user;
 
     @OneToMany(mappedBy = "company")
     List<JobPost> jobPosts;
+
+    @Column(name = "is_active")
+    @Builder.Default
+    Boolean active = false;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "categories_companies",
+            joinColumns = @JoinColumn(name = "company_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
+    List<CompanyCategory> categories = new ArrayList<>();
+
+    @Column(name = "created_at")
+    LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    LocalDateTime updatedAt;
+
+    @PrePersist
+    void createdAt() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+    @PreUpdate
+    void updatedAt() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

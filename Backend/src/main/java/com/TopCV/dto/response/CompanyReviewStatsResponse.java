@@ -1,4 +1,4 @@
-package com.TopCV.dto.request;
+package com.TopCV.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class JobCategoryRequest {
-    private String name;
+public class CompanyReviewStatsResponse {
+    Double averageRating;
+    Integer totalReviews;
 }

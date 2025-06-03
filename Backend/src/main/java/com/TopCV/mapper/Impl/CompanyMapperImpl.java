@@ -1,81 +1,76 @@
 package com.TopCV.mapper.Impl;
 
+import com.TopCV.dto.response.CompanyCategoryResponse;
+import com.TopCV.mapper.CompanyCategoryMapper;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.TopCV.dto.request.CompanyCreationRequest;
-import com.TopCV.dto.request.CompanyUpdateRequest;
 import com.TopCV.dto.response.CompanyResponse;
 import com.TopCV.entity.Company;
 import com.TopCV.mapper.CompanyMapper;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class CompanyMapperImpl implements CompanyMapper {
+    private final CompanyCategoryMapper companyCategoryMapper;
 
-    @Override
     public CompanyResponse toResponse(Company company) {
         if (company == null) {
             return null;
+        } else {
+            CompanyResponse.CompanyResponseBuilder companyResponse = CompanyResponse.builder();
+            companyResponse.id(company.getId());
+            companyResponse.name(company.getName());
+            companyResponse.description(company.getDescription());
+            companyResponse.logo(company.getLogo());
+            companyResponse.website(company.getWebsite());
+            companyResponse.employeeRange(company.getEmployeeRange());
+            companyResponse.followerCount(company.getFollowerCount());
+            companyResponse.address(company.getAddress());
+
+            if(company.getCategories() != null && !company.getCategories().isEmpty()){
+                companyResponse.categories(company.getCategories().stream()
+                        .map(companyCategoryMapper::toResponse)
+                        .toList());
+                return companyResponse.build();
+            }
+            else {
+                companyResponse.categories(List.of());
+            }
+
+            companyResponse.jobCount(company.getJobPosts().size());
+            return companyResponse.build();
         }
-        return CompanyResponse.builder()
-                .id(company.getId())
-                .name(company.getName())
-                .description(company.getDescription())
-                .logo(company.getLogo())
-                .website(company.getWebsite())
-                .employeeRange(company.getEmployeeRange())
-                .followerCount(company.getFollowerCount())
-                .address(company.getAddress())
-                // .categoryId(company.getCategory() != null ? company.getCategory().getId() : null) // Uncomment if needed
-                // .userId(company.getUser() != null ? company.getUser().getId() : null) // Uncomment if needed
-                .build();
     }
 
-    @Override
     public Company toEntity(CompanyCreationRequest request) {
         if (request == null) {
             return null;
+        } else {
+            Company.CompanyBuilder company = Company.builder();
+            company.name(request.getName());
+            company.description(request.getDescription());
+            company.logo(request.getLogo());
+            company.website(request.getWebsite());
+            company.employeeRange(request.getEmployeeRange());
+            company.address(request.getAddress());
+            return company.build();
         }
-        return Company.builder()
-                .name(request.getName())
-                .description(request.getDescription())
-                .logo(request.getLogo())
-                .website(request.getWebsite())
-                .employeeRange(request.getEmployeeRange())
-//                .followerCount(request.getFollowerCount() != null ? request.getFollowerCount() : 0)
-                .address(request.getAddress())
-                // .category(category) // Set this if you have category info in request
-                // .user(user) // Set this if you have user info in request
-                .build();
     }
 
-    @Override
-    public void updateEntity(Company company, CompanyUpdateRequest request) {
-        if (company == null || request == null) {
-            return;
-        }
-        if (request.getName() != null) {
+    public void updateEntity(Company company, CompanyCreationRequest request) {
+        if (request != null) {
             company.setName(request.getName());
-        }
-        if (request.getDescription() != null) {
             company.setDescription(request.getDescription());
-        }
-        if (request.getLogo() != null) {
             company.setLogo(request.getLogo());
-        }
-        if (request.getWebsite() != null) {
             company.setWebsite(request.getWebsite());
-        }
-        if (request.getEmployeeRange() != null) {
             company.setEmployeeRange(request.getEmployeeRange());
-        }
-        if (request.getFollowerCount() != null) {
-            company.setFollowerCount(request.getFollowerCount());
-        }
-        if (request.getAddress() != null) {
+
             company.setAddress(request.getAddress());
         }
     }

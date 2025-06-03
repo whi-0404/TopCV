@@ -3,6 +3,8 @@ package com.TopCV.dto.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,4 +17,5 @@ public class CompanyCreationRequest {
     private String website;
     private String employeeRange;
     private String address;
+    private List<Integer> categoryIds;
 }

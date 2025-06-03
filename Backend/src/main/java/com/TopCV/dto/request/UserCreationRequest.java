@@ -1,5 +1,6 @@
 package com.TopCV.dto.request;
 
+import com.TopCV.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -22,4 +23,6 @@ public class UserCreationRequest {
 
     @NotBlank(message = "FULLNAME_REQUIRED")
     String fullname;
+
+    String role;
 }

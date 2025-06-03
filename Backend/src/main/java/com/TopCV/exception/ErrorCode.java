@@ -39,7 +39,7 @@ public enum ErrorCode {
 
     // System errors
     EMAIL_SEND_FAILED(1501, "Failed to send email", HttpStatus.INTERNAL_SERVER_ERROR),
-    ROLE_NOT_EXISTED(1502, "Role not found", HttpStatus.BAD_REQUEST);
+    ROLE_NOT_EXISTED(1502, "Role not found", HttpStatus.BAD_REQUEST),
 
     COMPANY_NAME_EXISTED(1601, "Company name already exists", HttpStatus.BAD_REQUEST),
     COMPANY_NOT_EXISTED(1602, "Company not exists", HttpStatus.BAD_REQUEST),
@@ -56,8 +56,8 @@ public enum ErrorCode {
     REVIEW_ALREADY_EXISTED(2001, "Review already exists", HttpStatus.BAD_REQUEST),
     REVIEW_NOT_EXISTED(2002, "Review not exists", HttpStatus.BAD_REQUEST),
 
-    FOLLOW_EXISTED(2101, "Follow already exists", HttpStatus.BAD_REQUEST),
-    FOLLOW_NOT_EXISTED(2102, "Follow not exists", HttpStatus.BAD_REQUEST);
+    SKILL_NAME_EXISTED(2101, "Skill name already exists", HttpStatus.BAD_REQUEST),
+    SKILL_NOT_EXISTED(2102, "Skill not exists", HttpStatus.BAD_REQUEST);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

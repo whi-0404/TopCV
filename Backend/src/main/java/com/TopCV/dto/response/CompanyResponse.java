@@ -3,6 +3,8 @@ package com.TopCV.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -17,4 +19,7 @@ public class CompanyResponse {
     private String employeeRange;
     private Integer followerCount;
     private String address;
+    private int jobCount;
+    CompanyReviewStatsResponse reviewStats;
+    private List<CompanyCategoryResponse> categories;
 }

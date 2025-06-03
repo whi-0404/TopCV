@@ -1,6 +1,8 @@
 package com.TopCV.controller;
 
 import java.util.List;
+
+import com.TopCV.dto.response.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import com.TopCV.dto.request.CompanyReviewRequest;
@@ -14,7 +16,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/companies/{companyId}/reviews")
+@RequestMapping("api/v1/companies/{companyId}/reviews")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
@@ -25,29 +27,42 @@ public class CompanyReviewController {
     public ApiResponse<CompanyReviewResponse> addReview(@PathVariable Integer companyId,
                                                       @Valid @RequestBody CompanyReviewRequest request) {
         request.setCompanyId(companyId);
-        log.info("Adding review for company: {}", companyId);
         return ApiResponse.<CompanyReviewResponse>builder()
                 .result(reviewService.addReview(request))
                 .build();
     }
 
     @GetMapping
-    public ApiResponse<List<CompanyReviewResponse>> getReviewsByCompanyId(@PathVariable Integer companyId) {
-        log.info("Getting reviews for company: {}", companyId);
-        return ApiResponse.<List<CompanyReviewResponse>>builder()
-                .result(reviewService.getReviewsByCompanyId(companyId))
+    public ApiResponse<PageResponse<CompanyReviewResponse>> getReviewsByCompanyId(@PathVariable Integer companyId,
+                                                                                  @RequestParam(value = "page", defaultValue = "1") int page,
+                                                                                  @RequestParam(value = "size", defaultValue = "10") int size) {
+        return ApiResponse.<PageResponse<CompanyReviewResponse>>builder()
+                .result(reviewService.getReviewsByCompanyId(companyId, page, size))
                 .build();
     }
 
-    @PutMapping("/{id}")
-    public ApiResponse<String> updateReview(@PathVariable Integer companyId,
-                                            @PathVariable Integer id,
+    @PutMapping
+    public ApiResponse<CompanyReviewResponse> updateReview(@PathVariable("companyId") Integer companyId,
                                             @Valid @RequestBody CompanyReviewRequest request) {
         request.setCompanyId(companyId);
-        log.info("Updating review id: {} for company: {}", id, companyId);
-        reviewService.updateReview(id, request);
+        return ApiResponse.<CompanyReviewResponse>builder()
+                .result(reviewService.updateReview(request))
+                .build();
+    }
+
+    @DeleteMapping("/{userId}")
+    public ApiResponse<String> deleteReview(@PathVariable("companyId") Integer companyId,
+                                            @PathVariable("userId") String userId) {
+        reviewService.deleteReview(userId, companyId);
         return ApiResponse.<String>builder()
-                .result("Review has been updated")
+                .result("Review has been deleted")
+                .build();
+    }
+    @GetMapping( "/user" )
+    public ApiResponse<CompanyReviewResponse> getUserReviewForCompany(@PathVariable("companyId") Integer companyId) {
+        reviewService.getUserReviewForCompany(companyId);
+        return ApiResponse.<CompanyReviewResponse> builder()
+                .result(reviewService.getUserReviewForCompany(companyId))
                 .build();
     }
 }

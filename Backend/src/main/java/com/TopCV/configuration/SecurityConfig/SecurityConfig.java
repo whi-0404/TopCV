@@ -27,6 +27,8 @@ public class SecurityConfig {
             "/ws/**",
             "/api/v1/auth/**",
             "/api/v1/users/**",
+            "/api/v1/employers/**",
+            "/api/v1/companies/**",
     };
 
     @Bean
