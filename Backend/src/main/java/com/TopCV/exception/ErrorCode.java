@@ -43,6 +43,9 @@ public enum ErrorCode {
 
     COMPANY_NAME_EXISTED(1601, "Company name already exists", HttpStatus.BAD_REQUEST),
     COMPANY_NOT_EXISTED(1602, "Company not exists", HttpStatus.BAD_REQUEST),
+    COMPANY_NOT_ACTIVE(1603, "Company not active", HttpStatus.BAD_REQUEST),
+    ALREADY_FOLLOWING_COMPANY(1604, "Already following this company", HttpStatus.BAD_REQUEST),
+    NOT_FOLLOWING_COMPANY(1605, "Not following this company", HttpStatus.BAD_REQUEST),
 
     CATEGORY_NAME_EXISTED(1701, "Category name already exists", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_EXISTED(1702, "Category not exists", HttpStatus.BAD_REQUEST),

@@ -15,4 +15,7 @@ public interface CompanyService {
     void deleteCompany(Integer id);
     void activateCompany(Integer id);
     void deactivateCompany(Integer id);
+    void followCompany(Integer companyId);
+    void unfollowCompany(Integer companyId);
+    boolean isFollowing(Integer companyId);
 }

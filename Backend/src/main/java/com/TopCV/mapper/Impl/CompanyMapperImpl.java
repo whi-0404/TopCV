@@ -1,6 +1,7 @@
 package com.TopCV.mapper.Impl;
 
 import com.TopCV.dto.response.CompanyCategoryResponse;
+import com.TopCV.dto.response.CompanyDashboardResponse;
 import com.TopCV.mapper.CompanyCategoryMapper;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import com.TopCV.entity.Company;
 import com.TopCV.mapper.CompanyMapper;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -73,5 +75,21 @@ public class CompanyMapperImpl implements CompanyMapper {
 
             company.setAddress(request.getAddress());
         }
+    }
+
+    public CompanyDashboardResponse toCompanyDashboard(Company company) {
+        CompanyDashboardResponse response = new CompanyDashboardResponse();
+        response.setId(company.getId());
+        response.setDescription(company.getDescription());
+        response.setName(company.getName());
+        response.setLogo(company.getLogo());
+
+        List<CompanyCategoryResponse> categories = company.getCategories().stream()
+                .map(companyCategoryMapper::toResponse)
+                .collect(Collectors.toList());
+
+        response.setCategories(categories);
+        response.setJobCount(company.getJobPosts().size());
+        return response;
     }
 }

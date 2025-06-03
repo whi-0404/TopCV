@@ -4,10 +4,7 @@ import com.TopCV.dto.request.ChangePassRequest;
 import com.TopCV.dto.request.UserCreationRequest;
 import com.TopCV.dto.request.UserUpdateRequest;
 import com.TopCV.dto.request.VerifyOtpRequest;
-import com.TopCV.dto.response.ApiResponse;
-import com.TopCV.dto.response.PageResponse;
-import com.TopCV.dto.response.RegistrationResponse;
-import com.TopCV.dto.response.UserResponse;
+import com.TopCV.dto.response.*;
 import com.TopCV.enums.Role;
 import com.TopCV.service.UserService;
 import jakarta.validation.Valid;
@@ -110,6 +107,16 @@ public class UserController {
         userService.deactivateUser(userId);
         return ApiResponse.<String>builder()
                 .result("User deactivated successfully!!")
+                .build();
+    }
+
+    @GetMapping("/followed")
+    public ApiResponse<PageResponse<CompanyDashboardResponse>> getFollowedCompanies(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return ApiResponse.<PageResponse<CompanyDashboardResponse>>builder()
+                .result(userService.getFollowedCompanies(page, size))
                 .build();
     }
 }

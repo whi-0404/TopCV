@@ -85,7 +85,7 @@ public class CompanyServiceImpl implements CompanyService {
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
                 .Data(pageData.getContent().stream()
-                        .map(this::convertCompanyDashboard)
+                        .map(companyMapper::toCompanyDashboard)
                         .toList())
                 .build();
     }
@@ -167,19 +167,64 @@ public class CompanyServiceImpl implements CompanyService {
         companyRepository.save(company);
     }
 
-    private CompanyDashboardResponse convertCompanyDashboard(Company company) {
-        CompanyDashboardResponse response = new CompanyDashboardResponse();
-        response.setId(company.getId());
-        response.setDescription(company.getDescription());
-        response.setName(company.getName());
-        response.setLogo(company.getLogo());
+    @Override
+    @Transactional
+    public void followCompany(Integer companyId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        List<CompanyCategoryResponse> categories = company.getCategories().stream()
-                .map(categoryMapper::toResponse)
-                .collect(Collectors.toList());
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_EXISTED));
 
-        response.setCategories(categories);
-        response.setJobCount(company.getJobPosts().size());
-        return response;
+        if (!company.getActive()) {
+            throw new AppException(ErrorCode.COMPANY_NOT_ACTIVE);
+        }
+
+        if (user.getFollowCompanies().contains(company)) {
+            throw new AppException(ErrorCode.ALREADY_FOLLOWING_COMPANY);
+        }
+
+        user.getFollowCompanies().add(company);
+        company.setFollowerCount(company.getFollowerCount() + 1);
+
+        userRepository.save(user);
+        companyRepository.save(company);
     }
+
+    @Override
+    @Transactional
+    public void unfollowCompany(Integer companyId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_EXISTED));
+
+
+        if (!user.getFollowCompanies().contains(company)) {
+            throw new AppException(ErrorCode.NOT_FOLLOWING_COMPANY);
+        }
+
+        user.getFollowCompanies().remove(company);
+        company.setFollowerCount(Math.max(0, company.getFollowerCount() - 1));
+
+        userRepository.save(user);
+        companyRepository.save(company);
+    }
+
+    @Override
+    public boolean isFollowing(Integer companyId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        return user.getFollowCompanies().stream()
+                .anyMatch(company -> company.getId() == companyId);
+    }
+
+
+
+
 }

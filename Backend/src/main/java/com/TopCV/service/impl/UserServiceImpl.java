@@ -4,11 +4,12 @@ import com.TopCV.dto.request.ChangePassRequest;
 import com.TopCV.dto.request.UserCreationRequest;
 import com.TopCV.dto.request.UserUpdateRequest;
 import com.TopCV.dto.request.VerifyOtpRequest;
-import com.TopCV.dto.response.PageResponse;
-import com.TopCV.dto.response.RegistrationResponse;
+import com.TopCV.dto.response.*;
+import com.TopCV.entity.Company;
 import com.TopCV.entity.User;
 import com.TopCV.enums.OtpType;
 import com.TopCV.enums.Role;
+import com.TopCV.mapper.CompanyMapper;
 import com.TopCV.service.EmailService;
 import com.TopCV.service.redis.UserRedisService;
 import lombok.AccessLevel;
@@ -22,7 +23,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import com.TopCV.dto.response.UserResponse;
 import com.TopCV.exception.AppException;
 import com.TopCV.exception.ErrorCode;
 import com.TopCV.mapper.UserMapper;
@@ -45,6 +45,7 @@ public class UserServiceImpl implements UserService {
     OtpServiceImpl otpService;
     EmailService emailService;
     UserRedisService userRedisService;
+    CompanyMapper companyMapper;
 
     @Transactional
     public RegistrationResponse createUser(UserCreationRequest request) {
@@ -224,5 +225,24 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         userRepository.deactivateUser(userId, LocalDateTime.now());
+    }
+
+    public PageResponse<CompanyDashboardResponse> getFollowedCompanies(int page, int size) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        Page<Company> pageData = userRepository.findFollowedCompaniesByUserId(user.getId(), pageable);
+
+        return PageResponse.<CompanyDashboardResponse>builder()
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .Data(pageData.getContent().stream()
+                        .map(companyMapper::toCompanyDashboard)
+                        .toList())
+                .build();
     }
 }

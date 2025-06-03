@@ -1,5 +1,6 @@
 package com.TopCV.repository;
 
+import com.TopCV.entity.Company;
 import com.TopCV.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,4 +39,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Modifying
     @Query("UPDATE User u SET u.active = false, u.updatedAt = :updatedAt WHERE u.id = :userId")
     void deactivateUser(@Param("userId") String userId, @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Query("SELECT c FROM User u JOIN u.followCompanies c WHERE u.id = :userId AND c.active = true")
+    Page<Company> findFollowedCompaniesByUserId(@Param("userId") String userId, Pageable pageable);
 }

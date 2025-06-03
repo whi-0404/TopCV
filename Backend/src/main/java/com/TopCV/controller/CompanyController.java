@@ -83,4 +83,27 @@ public class CompanyController {
                 .result("Company has been deactivated")
                 .build();
     }
+
+    @PostMapping("/{id}/follow")
+    public ApiResponse<String> followCompany(@PathVariable Integer id) {
+        companyService.followCompany(id);
+        return ApiResponse.<String>builder()
+                .result("Followed company successfully")
+                .build();
+    }
+
+    @DeleteMapping("/{id}/follow")
+    public ApiResponse<String> unfollowCompany(@PathVariable Integer id) {
+        companyService.unfollowCompany(id);
+        return ApiResponse.<String>builder()
+                .result("Unfollowed company successfully")
+                .build();
+    }
+
+    @GetMapping("/{id}/follow-status")
+    public ApiResponse<Boolean> checkFollowStatus(@PathVariable Integer id) {
+        return ApiResponse.<Boolean>builder()
+                .result(companyService.isFollowing(id))
+                .build();
+    }
 }
