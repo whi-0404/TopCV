@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Integer> {
@@ -16,4 +17,6 @@ public interface CompanyRepository extends JpaRepository<Company, Integer> {
     boolean existsByName(String name);
 
     Page<Company> findAllByActiveTrue(Pageable pageable);
+
+    Optional<Company> findByUserId(String userId);
 }

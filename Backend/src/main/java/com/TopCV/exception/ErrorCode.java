@@ -60,7 +60,16 @@ public enum ErrorCode {
     REVIEW_NOT_EXISTED(2002, "Review not exists", HttpStatus.BAD_REQUEST),
 
     SKILL_NAME_EXISTED(2101, "Skill name already exists", HttpStatus.BAD_REQUEST),
-    SKILL_NOT_EXISTED(2102, "Skill not exists", HttpStatus.BAD_REQUEST);
+    SKILL_NOT_EXISTED(2102, "Skill not exists", HttpStatus.BAD_REQUEST),
+
+    JOB_POST_NOT_EXISTED(2201, "Job post not exists", HttpStatus.BAD_REQUEST),
+    CANNOT_UPDATE_JOB_POST(2202, "Can't update job post", HttpStatus.BAD_REQUEST),
+    CANNOT_DELETE_JOB_POST_WITH_APPLICATIONS(2203, "Can't delete job post with applications", HttpStatus.BAD_REQUEST),
+    CANNOT_CLOSE_INACTIVE_JOB_POST(2204, "Can't close inactive job post", HttpStatus.BAD_REQUEST),
+    CANNOT_REOPEN_ACTIVE_JOB_POST(2205, "Can't reopen active job post", HttpStatus.BAD_REQUEST),
+    JOB_POST_DEADLINE_EXPIRED(2206, "Job post deadline expired", HttpStatus.BAD_REQUEST),
+    JOB_POST_NOT_PENDING(2207, "Job post not pending", HttpStatus.BAD_REQUEST),
+    JOB_POST_NOT_ACTIVE(2208, "Job post not active", HttpStatus.BAD_REQUEST),;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

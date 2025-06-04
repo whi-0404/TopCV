@@ -29,6 +29,10 @@ public class SecurityConfig {
             "/api/v1/users/**",
             "/api/v1/employers/**",
             "/api/v1/companies/**",
+            "/api/v1/job-types/**",
+            "/api/v1/job-posts/**",
+            "/api/v1/job-levels/**",
+            "/api/v1/skills/**",
     };
 
     @Bean

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ public class JobPost {
     @Column(name = "experience_required")
     String experienceRequired;
 
-    LocalDateTime deadline;
+    LocalDate deadline;
 
     @Column(name = "applied_count")
     int appliedCount;
@@ -50,6 +51,7 @@ public class JobPost {
     @Column(name = "hiring_quota")
     int hiringQuota;
 
+    @Enumerated(EnumType.STRING)
     JobPostStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
