@@ -65,4 +65,43 @@ public class JobPostController {
                 .build();
     }
 
+    @PatchMapping("/{jobId}/close")
+    public ApiResponse<String> closeJobPost(@PathVariable Integer jobId){
+        jobPostService.closeJobPost(jobId);
+        return ApiResponse.<String>builder()
+                .result("job post has been closed!!")
+                .build();
+    }
+
+    @PatchMapping("/{jobId}/reopen")
+    public ApiResponse<String> reopenJobPost(@PathVariable Integer jobId){
+        jobPostService.reopenJobPost(jobId);
+        return ApiResponse.<String>builder()
+                .result("job post has been reopened!!")
+                .build();
+    }
+
+    @PatchMapping("/admin/{jobId}/approve")
+    public ApiResponse<String> approveJobPost(@PathVariable Integer jobId){
+        jobPostService.approveJobPost(jobId);
+        return ApiResponse.<String>builder()
+                .result("job post has been approved!!")
+                .build();
+    }
+
+    @PatchMapping("/admin/{jobId}/reject")
+    public ApiResponse<String> rejectJobPost(@PathVariable Integer jobId){
+        jobPostService.rejectJobPost(jobId);
+        return ApiResponse.<String>builder()
+                .result("job post has been rejected!!")
+                .build();
+    }
+
+    @PatchMapping("/admin/{jobId}/suspend")
+    public ApiResponse<String> suspendJobPost(@PathVariable Integer jobId){
+        jobPostService.suspendJobPost(jobId);
+        return ApiResponse.<String>builder()
+                .result("job post has been suspended!!")
+                .build();
+    }
 }

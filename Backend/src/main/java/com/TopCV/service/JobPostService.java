@@ -12,6 +12,7 @@ public interface JobPostService {
     void deleteJobPost(Integer jobId);
     PageResponse<JobPostResponse> getMyJobPosts(int page, int size);
 //    JobPostDetailResponse getJobPostDetail(Integer jobId);
+    void approveJobPost(Integer jobId);
     void closeJobPost(Integer jobId);
     void reopenJobPost(Integer jobId);
     void suspendJobPost(Integer jobId);

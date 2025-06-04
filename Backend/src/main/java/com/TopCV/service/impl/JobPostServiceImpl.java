@@ -243,6 +243,21 @@ public class JobPostServiceImpl implements JobPostService {
     @Override
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
+    public void approveJobPost(Integer jobId) {
+        JobPost jobPost = jobPostRepository.findById(jobId)
+                .orElseThrow(() -> new AppException(ErrorCode.JOB_POST_NOT_EXISTED));
+
+        if (jobPost.getStatus() != JobPostStatus.PENDING) {
+            throw new AppException(ErrorCode.JOB_POST_NOT_PENDING);
+        }
+
+        jobPost.setStatus(JobPostStatus.ACTIVE);
+        jobPostRepository.save(jobPost);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void rejectJobPost(Integer jobId) {
         JobPost jobPost = jobPostRepository.findById(jobId)
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_POST_NOT_EXISTED));
