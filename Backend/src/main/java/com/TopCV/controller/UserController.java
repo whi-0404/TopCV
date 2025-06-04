@@ -5,6 +5,7 @@ import com.TopCV.dto.request.UserCreationRequest;
 import com.TopCV.dto.request.UserUpdateRequest;
 import com.TopCV.dto.request.VerifyOtpRequest;
 import com.TopCV.dto.response.*;
+import com.TopCV.dto.response.JobPost.JobPostDashboardResponse;
 import com.TopCV.enums.Role;
 import com.TopCV.service.UserService;
 import jakarta.validation.Valid;
@@ -117,6 +118,16 @@ public class UserController {
 
         return ApiResponse.<PageResponse<CompanyDashboardResponse>>builder()
                 .result(userService.getFollowedCompanies(page, size))
+                .build();
+    }
+
+    @GetMapping("/job-posts-favorite")
+    public ApiResponse<PageResponse<JobPostDashboardResponse>> getFavoriteJobs(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return ApiResponse.<PageResponse<JobPostDashboardResponse>>builder()
+                .result(userService.getFavoriteJobs(page, size))
                 .build();
     }
 }

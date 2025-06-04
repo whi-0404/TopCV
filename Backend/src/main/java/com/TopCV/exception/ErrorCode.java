@@ -69,7 +69,9 @@ public enum ErrorCode {
     CANNOT_REOPEN_ACTIVE_JOB_POST(2205, "Can't reopen active job post", HttpStatus.BAD_REQUEST),
     JOB_POST_DEADLINE_EXPIRED(2206, "Job post deadline expired", HttpStatus.BAD_REQUEST),
     JOB_POST_NOT_PENDING(2207, "Job post not pending", HttpStatus.BAD_REQUEST),
-    JOB_POST_NOT_ACTIVE(2208, "Job post not active", HttpStatus.BAD_REQUEST),;
+    JOB_POST_NOT_ACTIVE(2208, "Job post not active", HttpStatus.BAD_REQUEST),
+    ALREADY_FAVORITED_JOB(2209, "Job already favorited", HttpStatus.BAD_REQUEST),
+    NOT_FAVORITED_JOB(2210, "Job not favorited", HttpStatus.BAD_REQUEST),;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

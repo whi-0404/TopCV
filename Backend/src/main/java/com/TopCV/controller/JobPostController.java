@@ -104,4 +104,31 @@ public class JobPostController {
                 .result("job post has been suspended!!")
                 .build();
     }
+
+    @PostMapping("/{jobId}/favorite")
+    public ApiResponse<String> favoriteJob(@PathVariable Integer jobId) {
+
+        jobPostService.favoriteJob(jobId);
+
+        return ApiResponse.<String>builder()
+                .result("Job added to favorites successfully!!")
+                .build();
+    }
+
+    @DeleteMapping("/{jobId}/favorite")
+    public ApiResponse<String> unFavoriteJob(@PathVariable Integer jobId) {
+
+        jobPostService.unFavoriteJob(jobId);
+
+        return ApiResponse.<String>builder()
+                .result("Job removed to favorites successfully!!")
+                .build();
+    }
+
+    @GetMapping("/{jobId}/isFavorite")
+    public ApiResponse<Boolean> isFavoriteJob(@PathVariable Integer jobId) {
+        return ApiResponse.<Boolean>builder()
+                .result(jobPostService.isFavoriteJob(jobId))
+                .build();
+    }
 }

@@ -18,4 +18,7 @@ public interface JobPostService {
     void suspendJobPost(Integer jobId);
     void rejectJobPost(Integer jobId);
     PageResponse<JobPostDashboardResponse> getJobPostsByCompany(Integer companyId, int page, int size);
+    void favoriteJob(Integer jobId);
+    void unFavoriteJob(Integer jobId);
+    boolean isFavoriteJob(Integer jobId);
 }

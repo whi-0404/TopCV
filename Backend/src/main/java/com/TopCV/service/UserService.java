@@ -5,6 +5,7 @@ import com.TopCV.dto.request.UserCreationRequest;
 import com.TopCV.dto.request.UserUpdateRequest;
 import com.TopCV.dto.request.VerifyOtpRequest;
 import com.TopCV.dto.response.CompanyDashboardResponse;
+import com.TopCV.dto.response.JobPost.JobPostDashboardResponse;
 import com.TopCV.dto.response.PageResponse;
 import com.TopCV.dto.response.RegistrationResponse;
 import com.TopCV.dto.response.UserResponse;
@@ -39,4 +40,6 @@ public interface UserService {
     void deactivateUser(String userId);
 
     PageResponse<CompanyDashboardResponse> getFollowedCompanies(int page, int size);
+
+    PageResponse<JobPostDashboardResponse> getFavoriteJobs(int page, int size);
 }

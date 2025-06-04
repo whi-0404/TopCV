@@ -5,11 +5,14 @@ import com.TopCV.dto.request.UserCreationRequest;
 import com.TopCV.dto.request.UserUpdateRequest;
 import com.TopCV.dto.request.VerifyOtpRequest;
 import com.TopCV.dto.response.*;
+import com.TopCV.dto.response.JobPost.JobPostDashboardResponse;
 import com.TopCV.entity.Company;
+import com.TopCV.entity.JobPost;
 import com.TopCV.entity.User;
 import com.TopCV.enums.OtpType;
 import com.TopCV.enums.Role;
 import com.TopCV.mapper.CompanyMapper;
+import com.TopCV.mapper.JobPostMapper;
 import com.TopCV.service.EmailService;
 import com.TopCV.service.redis.UserRedisService;
 import lombok.AccessLevel;
@@ -46,6 +49,7 @@ public class UserServiceImpl implements UserService {
     EmailService emailService;
     UserRedisService userRedisService;
     CompanyMapper companyMapper;
+    JobPostMapper jobPostMapper;
 
     @Transactional
     public RegistrationResponse createUser(UserCreationRequest request) {
@@ -227,6 +231,7 @@ public class UserServiceImpl implements UserService {
         userRepository.deactivateUser(userId, LocalDateTime.now());
     }
 
+    @PreAuthorize("hasRole('USER')")
     public PageResponse<CompanyDashboardResponse> getFollowedCompanies(int page, int size) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
@@ -242,6 +247,25 @@ public class UserServiceImpl implements UserService {
                 .totalElements(pageData.getTotalElements())
                 .Data(pageData.getContent().stream()
                         .map(companyMapper::toCompanyDashboard)
+                        .toList())
+                .build();
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    public PageResponse<JobPostDashboardResponse> getFavoriteJobs(int page, int size){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<JobPost> pageData = userRepository.findFavoriteJobsByUserId(user.getId(), pageable);
+
+        return PageResponse.<JobPostDashboardResponse>builder()
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .Data(pageData.getContent().stream()
+                        .map(jobPostMapper::toJobPostDashboard)
                         .toList())
                 .build();
     }

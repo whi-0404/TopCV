@@ -307,4 +307,57 @@ public class JobPostServiceImpl implements JobPostService {
                         .toList())
                 .build();
     }
+
+    @Override
+    @PreAuthorize("hasRole('USER')")
+    @Transactional
+    public void favoriteJob(Integer jobId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        JobPost jobPost = jobPostRepository.findById(jobId)
+                .orElseThrow(() -> new AppException(ErrorCode.JOB_POST_NOT_EXISTED));
+
+        if (jobPost.getStatus() != JobPostStatus.ACTIVE) {
+            throw new AppException(ErrorCode.JOB_POST_NOT_ACTIVE);
+        }
+
+        if (user.getFavoriteJobs().contains(jobPost)) {
+            throw new AppException(ErrorCode.ALREADY_FAVORITED_JOB);
+        }
+
+        user.getFavoriteJobs().add(jobPost);
+        userRepository.save(user);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('USER')")
+    @Transactional
+    public void unFavoriteJob(Integer jobId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        JobPost jobPost = jobPostRepository.findById(jobId)
+                .orElseThrow(() -> new AppException(ErrorCode.JOB_POST_NOT_EXISTED));
+
+        if (!user.getFavoriteJobs().contains(jobPost)) {
+            throw new AppException(ErrorCode.NOT_FAVORITED_JOB);
+        }
+
+        user.getFavoriteJobs().remove(jobPost);
+        userRepository.save(user);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('USER')")
+    public boolean isFavoriteJob(Integer jobId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        return user.getFavoriteJobs().stream()
+                .anyMatch(job -> job.getId() == jobId);
+    }
 }
