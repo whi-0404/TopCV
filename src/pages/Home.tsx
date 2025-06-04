@@ -291,24 +291,57 @@ const Home = () => {
       {/* Blog Section */}
       <section className="py-12 px-4 bg-gray-50">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="section-heading">Blog</h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="section-heading">Blog</h2>
+            <Link to="/blog" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium px-4 py-2 rounded-full bg-emerald-50">
+              View all →
+            </Link>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <img src={`/images/blog-${item}.jpg`} alt="Blog" className="w-full h-48 object-cover" />
-                <div className="p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    Lorem ipsum is placeholder text commonly used in the graphic...
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic...
-                  </p>
-                  <Link to="/blog/1" className="text-sm text-emerald-600 hover:text-emerald-700">
-                    Read more →
-                  </Link>
-                </div>
+            <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <img src="/images/blog-1.jpg" alt="Lorem ipsum placeholder text" className="w-full h-48 object-cover" />
+              <div className="p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  "Lorem ipsum" is placeholder text commonly used in graphic design and web development
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  "Lorem ipsum", also known as "lipsum", is dummy text used in printing and typesetting industry. Learn about its history and usage in web design...
+                </p>
+                <Link to="/blog/1" className="text-sm text-emerald-600 hover:text-emerald-700">
+                  Read more →
+                </Link>
               </div>
-            ))}
+            </div>
+            
+            <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <img src="/images/blog-2.jpg" alt="UI design trends 2025" className="w-full h-48 object-cover" />
+              <div className="p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  5 Outstanding User Interface (UI) Design Trends for 2025
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  In 2025, UI design will evolve towards minimalism, letting users easily focus and interact with multiple dynamic elements...
+                </p>
+                <Link to="/blog/2" className="text-sm text-emerald-600 hover:text-emerald-700">
+                  Read more →
+                </Link>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <img src="/images/blog-3.jpg" alt="Responsive design importance" className="w-full h-48 object-cover" />
+              <div className="p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Why is responsive design important in modern web development?
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Responsive design helps improve user experience and boosts SEO rankings for websites across different devices...
+                </p>
+                <Link to="/blog/3" className="text-sm text-emerald-600 hover:text-emerald-700">
+                  Read more →
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
