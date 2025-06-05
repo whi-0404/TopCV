@@ -1,33 +1,62 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { validateLoginForm } from '../../utils/validators';
 
 const Login = () => {
   const [userType, setUserType] = useState('jobseeker');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [errors, setErrors] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear errors when user starts typing
+    if (errors.length > 0) {
+      setErrors([]);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    
+    const validation = validateLoginForm(formData.email, formData.password);
+    
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      const formData = new FormData(e.target as HTMLFormElement);
-      const email = formData.get('email') as string;
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Giả lập đăng nhập thành công
+      // Simulate successful login
       const userData = {
         id: 1,
-        email: email,
-        name: email.split('@')[0], // Lấy tên từ email
+        email: formData.email,
+        name: formData.email.split('@')[0],
         userType: userType,
         isLoggedIn: true
       };
       
-      // Lưu thông tin user vào localStorage
       localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Chuyển về trang chủ
       navigate('/', { state: { visited: true } });
     } catch (error) {
       console.error('Login error:', error);
+      setErrors(['Login failed. Please try again.']);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -113,7 +142,7 @@ const Login = () => {
             transition={{ delay: 0.3 }}
             className="text-3xl font-bold text-gray-900 mb-2"
           >
-            Chào mừng trở lại
+            Welcome back
           </motion.h1>
 
           <motion.p
@@ -122,7 +151,7 @@ const Login = () => {
             transition={{ delay: 0.4 }}
             className="text-gray-600 mb-6"
           >
-            Hoặc đăng nhập với Google
+            Or sign in with Google
           </motion.p>
 
           <motion.button 
@@ -136,8 +165,30 @@ const Login = () => {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            <span className="text-gray-700">Đăng nhập với Google</span>
+            <span className="text-gray-700">Sign in with Google</span>
           </motion.button>
+
+          {errors.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+            >
+              <div className="flex">
+                <svg className="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.08 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <div>
+                  <h4 className="text-red-800 font-medium mb-1">Please fix the following errors:</h4>
+                  <ul className="text-red-700 text-sm space-y-1">
+                    {errors.map((error, index) => (
+                      <li key={index}>• {error}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           <motion.form 
             initial={{ opacity: 0, y: 20 }}
@@ -156,8 +207,11 @@ const Login = () => {
                 type="email"
                 id="email"
                 name="email"
-                placeholder="Nhập vào địa chỉ email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="Enter your email address"
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                required
               />
             </motion.div>
 
@@ -165,39 +219,50 @@ const Login = () => {
               whileHover={{ scale: 1.01 }}
             >
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Mật khẩu
+                Password
               </label>
               <input
                 type="password"
                 id="password"
                 name="password"
-                placeholder="Nhập mật khẩu"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Enter your password"
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                required
               />
             </motion.div>
 
             <motion.div 
               whileHover={{ scale: 1.01 }}
-              className="flex items-center"
+              className="flex items-center justify-between"
             >
-              <input
-                type="checkbox"
-                id="remember"
-                name="remember"
-                className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
-              />
-              <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
-                Ghi nhớ tài khoản
-              </label>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="remember"
+                  name="remember"
+                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                />
+                <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
+                  Remember me
+                </label>
+              </div>
+              <motion.span whileHover={{ scale: 1.05 }}>
+                <Link to="/forgot-password" className="text-sm text-emerald-600 hover:text-emerald-700">
+                  Forgot password?
+                </Link>
+              </motion.span>
             </motion.div>
 
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              className="w-full bg-emerald-600 text-white rounded-lg p-3 font-medium hover:bg-emerald-700 transition-colors"
+              disabled={isSubmitting}
+              className="w-full bg-emerald-600 text-white rounded-lg p-3 font-medium hover:bg-emerald-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Đăng nhập
+              {isSubmitting ? 'Signing in...' : 'Sign in'}
             </motion.button>
           </motion.form>
 
@@ -207,10 +272,10 @@ const Login = () => {
             transition={{ delay: 0.6 }}
             className="mt-6 text-center text-gray-600"
           >
-            Bạn chưa có tài khoản?{' '}
+            Don't have an account?{' '}
             <motion.span whileHover={{ scale: 1.05 }}>
               <Link to="/register" className="text-emerald-600 hover:text-emerald-700 font-medium">
-                Đăng ký
+                Sign up
               </Link>
             </motion.span>
           </motion.p>

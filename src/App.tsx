@@ -12,6 +12,9 @@ import Contact from './pages/Contact';
 import Profile from './pages/Profile';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
+import OtpVerification from './pages/Auth/OtpVerification';
+import ForgotPassword from './pages/Auth/ForgotPassword';
+import ChangePassword from './pages/Auth/ChangePassword';
 import PageTransition from './components/layout/PageTransition';
 import ScrollToTop from './components/layout/ScrollToTop';
 
@@ -46,6 +49,9 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/otp-verification" element={<OtpVerification />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/change-password" element={<ChangePassword />} />
       </Routes>
     </>
   );

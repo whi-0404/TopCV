@@ -216,6 +216,16 @@ const Header = () => {
                           </svg>
                           Settings
                         </Link>
+                        <Link
+                          to="/change-password"
+                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <svg className="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                          </svg>
+                          Change Password
+                        </Link>
                       </div>
                       
                       <div className="border-t border-gray-100 pt-2">
@@ -367,6 +377,13 @@ const Header = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Settings
+                  </Link>
+                  <Link 
+                    to="/change-password" 
+                    className="block px-4 py-2 text-gray-700 hover:text-emerald-600"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Change Password
                   </Link>
                   <button
                     onClick={() => {
