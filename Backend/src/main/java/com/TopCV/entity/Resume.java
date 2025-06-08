@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "resumes")
-public class Resumes {
+public class Resume {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;

@@ -24,14 +24,22 @@ public class Application {
     User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employer_id")
+    User employer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id")
     JobPost jobPost;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "resume_id")
-    Resumes resumes;
+    Resume resumes;
 
+    @Enumerated(EnumType.STRING)
     ApplicationStatus status;
+
+    @Column(name = "cover_letter", columnDefinition = "TEXT")
+    String coverLetter;
 
     @Column(name = "created_at")
     LocalDateTime createdAt;

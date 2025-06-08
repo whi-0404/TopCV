@@ -71,7 +71,18 @@ public enum ErrorCode {
     JOB_POST_NOT_PENDING(2207, "Job post not pending", HttpStatus.BAD_REQUEST),
     JOB_POST_NOT_ACTIVE(2208, "Job post not active", HttpStatus.BAD_REQUEST),
     ALREADY_FAVORITED_JOB(2209, "Job already favorited", HttpStatus.BAD_REQUEST),
-    NOT_FAVORITED_JOB(2210, "Job not favorited", HttpStatus.BAD_REQUEST),;
+    NOT_FAVORITED_JOB(2210, "Job not favorited", HttpStatus.BAD_REQUEST),
+
+    ALREADY_APPLIED_JOB(2301, "Job already applied", HttpStatus.BAD_REQUEST),
+    APPLICATION_NOT_EXISTED(2302, "Application not exists", HttpStatus.BAD_REQUEST),
+    CANNOT_WITHDRAW_APPLICATION(2303, "Can't withdraw application", HttpStatus.BAD_REQUEST),
+    INVALID_APPLICATION_STATUS(2304, "Invalid application status", HttpStatus.BAD_REQUEST),
+    INVALID_STATUS_TRANSITION(2305, "Invalid status transition", HttpStatus.BAD_REQUEST),
+    APPLICATION_IDS_REQUIRED(2306,"Application ids required", HttpStatus.BAD_REQUEST),
+    SOME_APPLICATIONS_NOT_FOUND(2307, "Some applications not found", HttpStatus.BAD_REQUEST),
+
+    RESUME_NOT_EXISTED(2401, "Resume not existed", HttpStatus.BAD_REQUEST),
+    RESUME_NOT_BELONGS_TO_USER(2402, "Resume not belongs to user", HttpStatus.BAD_REQUEST),;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

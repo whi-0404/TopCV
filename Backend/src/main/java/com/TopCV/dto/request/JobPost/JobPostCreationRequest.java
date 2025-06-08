@@ -31,7 +31,7 @@ public class JobPostCreationRequest {
     String experienceRequired;
 
     @Future(message = "DEADLINE_MUST_BE_FUTURE")
-    LocalDate deadline;
+    LocalDate deadline; //yyyy-mm-dd
 
     int hiringQuota;
 

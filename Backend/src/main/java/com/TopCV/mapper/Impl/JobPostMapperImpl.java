@@ -24,8 +24,6 @@ public class JobPostMapperImpl implements JobPostMapper {
     private final JobTypeMapper jobTypeMapper;
     private final JobLevelMapper jobLevelMapper;
     private final SkillMapper skillMapper;
-    private final ApplicationMapper applicationMapper;
-    private final CompanyRepository companyRepository;
 
     @Override
     public JobPost toEntity(JobPostCreationRequest request) {

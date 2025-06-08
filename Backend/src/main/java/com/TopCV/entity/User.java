@@ -74,7 +74,7 @@ public class User {
         List<Application> applications;
 
         @OneToMany(mappedBy = "user")
-        List<Resumes> resumes;
+        List<Resume> resumes;
 
         @Enumerated(EnumType.STRING)
         Role role;

@@ -1,11 +1,11 @@
 package com.TopCV.enums;
 
 public enum ApplicationStatus {
-    PENDING,
-    REVIEWING,
-    SHORTLISTED,
-    INTERVIEWED,
+    PENDING, //Chờ Employer review
+    REVIEWING, //Employer đã xem
+    SHORTLISTED, //Pass CV
+    INTERVIEWED, //PV xong
     HIRED,
-    REJECTED,
-    WITHDRAWN
+    REJECTED, //Chưa phù hợp
+    WITHDRAWN // rút đơn (PENDING và REVIEWING)
 }
