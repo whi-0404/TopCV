@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { EyeIcon, EyeSlashIcon, UserIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { validateEmail, validatePassword, validateName, validatePasswordConfirmation } from '../../../utils/validators';
+import authService from '../../../services/authService';
 
 const JobSeekerRegister: React.FC = () => {
   const navigate = useNavigate();
@@ -11,7 +12,9 @@ const JobSeekerRegister: React.FC = () => {
     lastName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    phone: '',
+    address: ''
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -78,12 +81,42 @@ const JobSeekerRegister: React.FC = () => {
 
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Call API to register user
+      const response = await authService.registerUser({
+        userName: `${formData.firstName.toLowerCase()}${formData.lastName.toLowerCase()}${Date.now()}`,
+        email: formData.email.trim(),
+        password: formData.password,
+        fullname: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+        phone: formData.phone?.trim() || undefined,
+        address: formData.address?.trim() || undefined
+      });
+
+      // Navigate to OTP verification with the received keyRedisToken
+      navigate('/auth/otp-verification', { 
+        state: { 
+          email: formData.email,
+          keyRedisToken: response.keyRedisToken,
+          type: 'email-verification'
+        }
+      });
+      
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      
+      // Handle specific error messages
+      let errorMessage = 'Đăng ký thất bại. Vui lòng thử lại.';
+      
+      if (error.message?.includes('EMAIL_EXISTED')) {
+        setErrors({ email: 'Email này đã được sử dụng. Vui lòng chọn email khác.' });
+      } else if (error.message?.includes('USERNAME_EXISTED')) {
+        setErrors({ email: 'Tài khoản đã tồn tại. Vui lòng thử email khác.' });
+      } else {
+        setErrors({ general: error.message || errorMessage });
+      }
+    } finally {
       setIsLoading(false);
-      // Simulate successful registration
-      navigate('/auth/otp-verification', { state: { email: formData.email } });
-    }, 2000);
+    }
   };
 
   const getPasswordStrength = () => {

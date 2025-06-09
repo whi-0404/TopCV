@@ -92,7 +92,7 @@ function App() {
 
         {/* User Dashboard Routes */}
         <Route path="/user/*" element={
-          <ProtectedRoute requiredRole="user">
+          <ProtectedRoute requiredRole="jobseeker">
             <UserLayout>
               <Routes>
                 <Route path="dashboard" element={<UserDashboard />} />

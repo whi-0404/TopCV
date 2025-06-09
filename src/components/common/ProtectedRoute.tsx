@@ -1,26 +1,32 @@
 import React, { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requiredRole?: string;
+  requiredRole?: 'jobseeker' | 'company';
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
-  // Tạm thời bypass authentication để test layout
-  // TODO: Thêm logic authentication thật sau này
-  const isAuthenticated = true; // Mock value
-  
-  // Mock role based on current URL for testing
-  const currentPath = window.location.pathname;
-  const userRole = currentPath.includes('/company/') ? 'company' : 'user';
+  const { user, isAuthenticated, isLoading } = useAuth();
 
-  if (!isAuthenticated) {
+  // Show loading spinner while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user) {
     return <Navigate to="/auth/login" replace />;
   }
 
-  if (requiredRole && userRole !== requiredRole) {
-    return <Navigate to="/unauthorized" replace />;
+  if (requiredRole && user.userType !== requiredRole) {
+    // Redirect to appropriate login if role doesn't match
+    const redirectPath = requiredRole === 'jobseeker' ? '/auth/jobseeker/login' : '/auth/company/login';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return <>{children}</>;

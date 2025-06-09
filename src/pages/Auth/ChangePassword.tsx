@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { validateChangePasswordForm, validatePassword, PasswordValidationResult } from '../../utils/validators';
+import authService from '../../services/authService';
 
 const ChangePassword = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Check if this is from password reset flow
+  const isResetMode = location.state?.type === 'reset';
+  const email = location.state?.email || '';
+  const otp = location.state?.otp || '';
+
   const [formData, setFormData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -18,7 +27,6 @@ const ChangePassword = () => {
     confirm: false
   });
   const [passwordStrength, setPasswordStrength] = useState<PasswordValidationResult | null>(null);
-  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -53,36 +61,85 @@ const ChangePassword = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const validation = validateChangePasswordForm(
-      formData.currentPassword,
-      formData.newPassword,
-      formData.confirmPassword
-    );
+    // Different validation for reset mode vs change mode
+    let validationErrors: string[] = [];
 
-    if (!validation.isValid) {
-      setErrors(validation.errors);
+    if (isResetMode) {
+      // Reset mode: only validate new password and confirmation
+      const newPasswordValidation = validatePassword(formData.newPassword);
+      if (!newPasswordValidation.isValid) {
+        validationErrors.push(...newPasswordValidation.errors);
+      }
+
+      if (formData.newPassword !== formData.confirmPassword) {
+        validationErrors.push('Mật khẩu xác nhận không khớp');
+      }
+
+      if (!email || !otp) {
+        validationErrors.push('Thông tin không hợp lệ. Vui lòng thử lại.');
+      }
+    } else {
+      // Change mode: validate all fields
+      const validation = validateChangePasswordForm(
+        formData.currentPassword,
+        formData.newPassword,
+        formData.confirmPassword
+      );
+
+      if (!validation.isValid) {
+        validationErrors = validation.errors;
+      }
+    }
+
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors);
       setIsSubmitting(false);
       return;
     }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (isResetMode) {
+        // Reset password flow
+        await authService.resetPassword({
+          email,
+          otp,
+          newPassword: formData.newPassword
+        });
+      } else {
+        // Change password flow (for authenticated users)
+        await authService.changePassword({
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword
+        });
+      }
       
       setIsSuccess(true);
       
       // Auto redirect after 3 seconds
       setTimeout(() => {
-        navigate('/login', { 
+        navigate('/auth/login', { 
           state: { 
-            message: 'Password changed successfully! Please log in with your new password.',
+            message: 'Mật khẩu đã được thay đổi thành công! Vui lòng đăng nhập với mật khẩu mới.',
             type: 'success'
           }
         });
       }, 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Change password error:', error);
-      setErrors(['Failed to change password. Please try again.']);
+      
+      let errorMessage = 'Thay đổi mật khẩu thất bại. Vui lòng thử lại.';
+      
+      if (error.message?.includes('INVALID_CURRENT_PASSWORD')) {
+        errorMessage = 'Mật khẩu hiện tại không chính xác.';
+      } else if (error.message?.includes('INVALID_OTP')) {
+        errorMessage = 'Mã OTP không hợp lệ hoặc đã hết hạn.';
+      } else if (error.message?.includes('USER_NOT_EXISTED')) {
+        errorMessage = 'Tài khoản không tồn tại.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setErrors([errorMessage]);
     } finally {
       setIsSubmitting(false);
     }

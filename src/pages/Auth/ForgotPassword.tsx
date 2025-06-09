@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { validateEmail } from '../../utils/validators';
+import authService from '../../services/authService';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -31,23 +32,34 @@ const ForgotPassword = () => {
     }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Call API to send forgot password OTP
+      await authService.forgotPassword(email.trim());
       
       setIsSuccess(true);
       
       // Auto redirect after 3 seconds
       setTimeout(() => {
-        navigate('/otp-verification', { 
+        navigate('/auth/otp-verification', { 
           state: { 
-            email: email,
+            email: email.trim(),
             type: 'password-reset'
           }
         });
       }, 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Forgot password error:', error);
-      setErrors(['Failed to send reset email. Please try again.']);
+      
+      let errorMessage = 'Gửi email khôi phục thất bại. Vui lòng thử lại.';
+      
+      if (error.message?.includes('USER_NOT_EXISTED')) {
+        errorMessage = 'Email không tồn tại trong hệ thống.';
+      } else if (error.message?.includes('USER_DEACTIVATED')) {
+        errorMessage = 'Tài khoản đã bị vô hiệu hóa.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setErrors([errorMessage]);
     } finally {
       setIsSubmitting(false);
     }
@@ -143,7 +155,7 @@ const ForgotPassword = () => {
               transition={{ delay: 1 }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => navigate('/otp-verification', { state: { email: email, type: 'password-reset' } })}
+              onClick={() => navigate('/auth/otp-verification', { state: { email: email.trim(), type: 'password-reset' } })}
               className="w-full bg-emerald-600 text-white rounded-lg p-3 font-medium hover:bg-emerald-700 transition-colors"
             >
               Continue to Verification

@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { validateOTP } from '../../utils/validators';
+import authService from '../../services/authService';
 
 const OtpVerification = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -10,7 +11,13 @@ const OtpVerification = () => {
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Get email and type from navigation state
+  const email = location.state?.email || '';
+  const verificationType = location.state?.type || 'email-verification'; // 'email-verification' or 'password-reset'
+  const keyRedisToken = location.state?.keyRedisToken || '';
 
   useEffect(() => {
     if (resendTimer > 0) {
@@ -59,19 +66,48 @@ const OtpVerification = () => {
     }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulate successful verification
-      navigate('/login', { 
-        state: { 
-          message: 'Email verified successfully! Please log in to continue.',
-          type: 'success'
-        }
-      });
-    } catch (error) {
+      const otpCode = otp.join('');
+
+      if (verificationType === 'password-reset') {
+        // Navigate to change password page with OTP and email
+        navigate('/auth/change-password', {
+          state: {
+            email,
+            otp: otpCode,
+            type: 'reset'
+          }
+        });
+      } else {
+        // Email verification
+        await authService.verifyEmail({
+          keyRedisToken: keyRedisToken,
+          otp: otpCode
+        });
+
+        // Navigate to login with success message
+        navigate('/auth/login', { 
+          state: { 
+            message: 'Email đã được xác thực thành công! Vui lòng đăng nhập để tiếp tục.',
+            type: 'success'
+          }
+        });
+      }
+    } catch (error: any) {
       console.error('OTP verification error:', error);
-      setErrors(['Invalid verification code. Please try again.']);
+      
+      let errorMessage = 'Mã xác thực không hợp lệ. Vui lòng thử lại.';
+      
+      if (error.message?.includes('INVALID_OTP')) {
+        errorMessage = 'Mã OTP không chính xác.';
+      } else if (error.message?.includes('EXPIRED_OTP')) {
+        errorMessage = 'Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.';
+      } else if (error.message?.includes('TOO_MANY_ATTEMPTS')) {
+        errorMessage = 'Quá nhiều lần thử. Vui lòng thử lại sau.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setErrors([errorMessage]);
     } finally {
       setIsSubmitting(false);
     }
@@ -81,18 +117,31 @@ const OtpVerification = () => {
     if (!canResend) return;
 
     try {
-      // Simulate resend API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (verificationType === 'password-reset') {
+        // Resend forgot password OTP
+        await authService.forgotPassword(email);
+      } else {
+        // For email verification, we can't really resend without going back to registration
+        // This would need to be handled differently based on your backend implementation
+        setErrors(['Để gửi lại mã xác thực email, vui lòng đăng ký lại.']);
+        return;
+      }
       
       setCanResend(false);
       setResendTimer(60);
       setErrors([]);
       
       // Show success message
-      alert('Verification code sent successfully!');
-    } catch (error) {
+      alert('Mã xác thực đã được gửi lại thành công!');
+    } catch (error: any) {
       console.error('Resend error:', error);
-      setErrors(['Failed to resend code. Please try again.']);
+      
+      let errorMessage = 'Gửi lại mã thất bại. Vui lòng thử lại.';
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setErrors([errorMessage]);
     }
   };
 
@@ -159,10 +208,13 @@ const OtpVerification = () => {
             </h1>
             
             <p className="text-gray-600">
-              We've sent a 6-digit verification code to
+              {verificationType === 'password-reset' 
+                ? 'Chúng tôi đã gửi mã xác thực để đặt lại mật khẩu đến'
+                : 'Chúng tôi đã gửi mã xác thực 6 chữ số đến'
+              }
             </p>
             <p className="text-emerald-600 font-medium">
-              your.email@example.com
+              {email || 'your.email@example.com'}
             </p>
           </motion.div>
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { EyeIcon, EyeSlashIcon, BuildingOfficeIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { validateEmail, validatePassword, validateName, validatePasswordConfirmation } from '../../../utils/validators';
+import authService from '../../../services/authService';
 
 const CompanyRegister: React.FC = () => {
   const navigate = useNavigate();
@@ -122,12 +123,43 @@ const CompanyRegister: React.FC = () => {
 
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Call API to register company
+      const response = await authService.registerCompany({
+        companyName: formData.companyName.trim(),
+        email: formData.companyEmail.trim(),
+        password: formData.password,
+        phone: formData.phone?.trim() || undefined,
+        address: `${formData.industry} - ${formData.companySize}`, // Temporary mapping
+        website: formData.website?.trim() || undefined,
+        description: `Contact: ${formData.contactPerson.trim()} - Position: ${formData.position.trim()}`
+      });
+
+      // Navigate to OTP verification with the received keyRedisToken
+      navigate('/auth/otp-verification', { 
+        state: { 
+          email: formData.companyEmail,
+          keyRedisToken: response.keyRedisToken,
+          type: 'email-verification'
+        }
+      });
+      
+    } catch (error: any) {
+      console.error('Company registration error:', error);
+      
+      // Handle specific error messages
+      let errorMessage = 'Đăng ký công ty thất bại. Vui lòng thử lại.';
+      
+      if (error.message?.includes('EMAIL_EXISTED')) {
+        setErrors({ companyEmail: 'Email này đã được sử dụng. Vui lòng chọn email khác.' });
+      } else if (error.message?.includes('USERNAME_EXISTED')) {
+        setErrors({ companyEmail: 'Công ty đã tồn tại. Vui lòng thử email khác.' });
+      } else {
+        setErrors({ general: error.message || errorMessage });
+      }
+    } finally {
       setIsLoading(false);
-      // Simulate successful registration
-      navigate('/auth/otp-verification', { state: { email: formData.companyEmail } });
-    }, 2000);
+    }
   };
 
   const getPasswordStrength = () => {

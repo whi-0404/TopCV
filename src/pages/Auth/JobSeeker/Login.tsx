@@ -1,16 +1,35 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { EyeIcon, EyeSlashIcon, UserIcon } from '@heroicons/react/24/outline';
+import { validateEmail } from '../../../utils/validators';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const JobSeekerLogin: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string>('');
+
+  // Check for messages from navigation state
+  React.useEffect(() => {
+    if (location.state?.message) {
+      if (location.state?.type === 'success') {
+        setSuccessMessage(location.state.message);
+      } else {
+        setErrors([location.state.message]);
+      }
+      // Clear the message from navigation state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -18,31 +37,75 @@ const JobSeekerLogin: React.FC = () => {
       ...prev,
       [name]: value
     }));
+
+    // Clear errors when user starts typing
+    if (errors.length > 0) {
+      setErrors([]);
+    }
+    if (successMessage) {
+      setSuccessMessage('');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     setIsLoading(true);
+    setErrors([]);
+
+    // Validate form
+    const validationErrors: string[] = [];
     
-    // Simulate API call
-    setTimeout(() => {
+    if (!formData.email.trim()) {
+      validationErrors.push('Email là bắt buộc');
+    } else {
+      const emailValidation = validateEmail(formData.email);
+      if (!emailValidation.isValid) {
+        validationErrors.push(...emailValidation.errors);
+      }
+    }
+    
+    if (!formData.password.trim()) {
+      validationErrors.push('Mật khẩu là bắt buộc');
+    }
+
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors);
       setIsLoading(false);
-      
-      // Create user data and save to localStorage
-      const userData = {
-        id: Date.now(),
-        email: formData.email,
-        name: formData.email.split('@')[0],
-        userType: 'jobseeker',
-        isLoggedIn: true
-      };
-      
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Redirect to homepage
+      return;
+    }
+
+    try {
+      // Call API login
+      await login({
+        email: formData.email.trim(),
+        password: formData.password
+      }, 'user');
+
+      // Redirect to homepage after successful login
       navigate('/', { replace: true });
-    }, 2000);
+      
+    } catch (error: any) {
+      console.error('Login error:', error);
+      
+      // Handle specific error messages
+      let errorMessage = 'Đăng nhập thất bại. Vui lòng thử lại.';
+      
+      if (error.message?.includes('USER_NOT_EXISTED')) {
+        errorMessage = 'Email không tồn tại trong hệ thống.';
+      } else if (error.message?.includes('UNAUTHENTICATED')) {
+        errorMessage = 'Email hoặc mật khẩu không chính xác.';
+      } else if (error.message?.includes('USER_DEACTIVATED')) {
+        errorMessage = 'Tài khoản đã bị vô hiệu hóa.';
+      } else if (error.message?.includes('EMAIL_NOT_VERIFIED')) {
+        errorMessage = 'Email chưa được xác thực. Vui lòng kiểm tra email để xác thực tài khoản.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setErrors([errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -80,6 +143,45 @@ const JobSeekerLogin: React.FC = () => {
               Sign in to continue your job search journey
             </p>
           </div>
+
+          {/* Success Message */}
+          {successMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6"
+            >
+              <div className="flex">
+                <svg className="w-5 h-5 text-green-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <p className="text-green-800 text-sm">{successMessage}</p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Error Messages */}
+          {errors.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+            >
+              <div className="flex">
+                <svg className="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.08 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <div>
+                  <h4 className="text-red-800 font-medium mb-1">Vui lòng kiểm tra lại:</h4>
+                  <ul className="text-red-700 text-sm space-y-1">
+                    {errors.map((error, index) => (
+                      <li key={index}>• {error}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">

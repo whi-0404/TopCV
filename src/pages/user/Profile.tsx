@@ -1,4 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import userService, { 
+  UserProfile as ApiUserProfile, 
+  UserUpdateRequest,
+  UserSkill,
+  UserEducation,
+  UserExperience,
+  UserLanguage,
+  UserCertification
+} from '../../services/userService';
 
 interface UserProfile {
   personalInfo: {
@@ -17,105 +26,97 @@ interface UserProfile {
     workLocation: string;
     summary: string;
   };
-  education: Array<{
-    id: number;
-    degree: string;
-    major: string;
-    school: string;
-    graduationYear: string;
-    gpa?: string;
-  }>;
-  experience: Array<{
-    id: number;
-    position: string;
-    company: string;
-    startDate: string;
-    endDate: string;
-    isCurrent: boolean;
-    description: string;
-  }>;
-  skills: string[];
-  languages: Array<{
-    id: number;
-    language: string;
-    level: string;
-  }>;
-  certifications: Array<{
-    id: number;
-    name: string;
-    issuer: string;
-    issueDate: string;
-    expiryDate?: string;
-  }>;
+  education: UserEducation[];
+  experience: UserExperience[];
+  skills: UserSkill[];
+  languages: UserLanguage[];
+  certifications: UserCertification[];
 }
 
 const Profile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [apiProfileData, setApiProfileData] = useState<ApiUserProfile | null>(null);
+  const [newSkill, setNewSkill] = useState('');
+  
+  // Initialize with empty data instead of mock data
   const [profileData, setProfileData] = useState<UserProfile>({
     personalInfo: {
-      fullName: 'Nguyễn Văn A',
-      email: 'nguyenvana@email.com',
-      phone: '0123456789',
-      dateOfBirth: '1995-01-15',
+      fullName: '',
+      email: '',
+      phone: '',
+      dateOfBirth: '',
       gender: 'male',
-      address: 'Quận 1, TP. Hồ Chí Minh',
-      avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
+      address: '',
+      avatar: '/images/default-avatar.png'
     },
     professional: {
-      currentPosition: 'Frontend Developer',
-      experience: '3 năm',
-      expectedSalary: '20-25 triệu',
-      workLocation: 'TP. Hồ Chí Minh',
-      summary: 'Frontend Developer với 3 năm kinh nghiệm phát triển ứng dụng web sử dụng React, TypeScript và các công nghệ hiện đại. Có kinh nghiệm làm việc trong môi trường Agile và đam mê tạo ra những sản phẩm chất lượng cao.'
+      currentPosition: '',
+      experience: '',
+      expectedSalary: '',
+      workLocation: '',
+      summary: ''
     },
-    education: [
-      {
-        id: 1,
-        degree: 'Cử nhân',
-        major: 'Công nghệ thông tin',
-        school: 'Đại học Bách Khoa TP.HCM',
-        graduationYear: '2017',
-        gpa: '3.2/4.0'
-      }
-    ],
-    experience: [
-      {
-        id: 1,
-        position: 'Frontend Developer',
-        company: 'TechCorp Vietnam',
-        startDate: '2021-06',
-        endDate: '',
-        isCurrent: true,
-        description: 'Phát triển và bảo trì các ứng dụng web sử dụng React, TypeScript. Tham gia xây dựng hệ thống quản lý nội bộ phục vụ 500+ nhân viên.'
-      },
-      {
-        id: 2,
-        position: 'Junior Frontend Developer',
-        company: 'StartupXYZ',
-        startDate: '2019-03',
-        endDate: '2021-05',
-        isCurrent: false,
-        description: 'Xây dựng giao diện người dùng cho ứng dụng e-commerce. Làm việc với team 5 người, tăng conversion rate lên 15%.'
-      }
-    ],
-    skills: ['ReactJS', 'TypeScript', 'JavaScript', 'HTML/CSS', 'Tailwind CSS', 'Node.js', 'Git', 'Figma'],
-    languages: [
-      { id: 1, language: 'Tiếng Việt', level: 'Bản ngữ' },
-      { id: 2, language: 'Tiếng Anh', level: 'Trung cấp' }
-    ],
-    certifications: [
-      {
-        id: 1,
-        name: 'React Developer Certification',
-        issuer: 'Meta',
-        issueDate: '2022-08',
-        expiryDate: '2025-08'
-      }
-    ]
+    education: [],
+    experience: [],
+    skills: [],
+    languages: [],
+    certifications: []
   });
 
-  const [newSkill, setNewSkill] = useState('');
+  // Fetch user profile data on component mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch main profile
+        const profile = await userService.getMyProfile();
+        setApiProfileData(profile);
+        
+        // Fetch additional data
+        const [skills, education, experience, languages, certifications] = await Promise.allSettled([
+          userService.getMySkills(),
+          userService.getMyEducation(),
+          userService.getMyExperience(),
+          userService.getMyLanguages(),
+          userService.getMyCertifications()
+        ]);
+        
+        // Update profileData with API data
+        setProfileData(prev => ({
+          ...prev,
+          personalInfo: {
+            ...prev.personalInfo,
+            fullName: profile.fullname || '',
+            email: profile.email || '',
+            phone: profile.phone || '',
+            dateOfBirth: profile.dob ? profile.dob.split('T')[0] : '',
+            address: profile.address || '',
+            avatar: userService.getAvatarUrl(profile.avt),
+          },
+          skills: skills.status === 'fulfilled' ? skills.value : [],
+          education: education.status === 'fulfilled' ? education.value : [],
+          experience: experience.status === 'fulfilled' ? experience.value : [],
+          languages: languages.status === 'fulfilled' ? languages.value : [],
+          certifications: certifications.status === 'fulfilled' ? certifications.value : []
+        }));
+        
+        setError('');
+      } catch (err: any) {
+        console.error('Failed to fetch profile:', err);
+        setError('Không thể tải thông tin profile. Vui lòng thử lại.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const tabs = [
     { id: 'personal', name: 'Thông tin cá nhân', icon: '👤' },
@@ -148,25 +149,54 @@ const Profile: React.FC = () => {
   };
 
   const addSkill = () => {
-    if (newSkill.trim() && !profileData.skills.includes(newSkill.trim())) {
+    if (newSkill.trim() && !profileData.skills.some(skill => skill.name === newSkill.trim())) {
+      const newSkillObj: UserSkill = {
+        name: newSkill.trim(),
+        level: 'Beginner' // Default level
+      };
       setProfileData(prev => ({
         ...prev,
-        skills: [...prev.skills, newSkill.trim()]
+        skills: [...prev.skills, newSkillObj]
       }));
       setNewSkill('');
     }
   };
 
-  const removeSkill = (skillToRemove: string) => {
+  const removeSkill = (skillToRemove: UserSkill) => {
     setProfileData(prev => ({
       ...prev,
-      skills: prev.skills.filter(skill => skill !== skillToRemove)
+      skills: prev.skills.filter(skill => skill.name !== skillToRemove.name)
     }));
   };
 
-  const handleSave = () => {
-    console.log('Saving profile:', profileData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!apiProfileData) return;
+    
+    try {
+      setIsSaving(true);
+      
+      const updateData: UserUpdateRequest = {
+        userName: apiProfileData.userName, // Keep existing username
+        fullName: profileData.personalInfo.fullName,
+        phone: profileData.personalInfo.phone,
+        address: profileData.personalInfo.address,
+        dob: profileData.personalInfo.dateOfBirth,
+        // avt: profileData.personalInfo.avatar // Avatar update needs separate handling
+      };
+      
+      const updatedProfile = await userService.updateMyProfile(updateData);
+      setApiProfileData(updatedProfile);
+      
+      setIsEditing(false);
+      setError('');
+      setSuccessMessage('Cập nhật thông tin thành công!');
+      
+    } catch (err: any) {
+      console.error('Failed to update profile:', err);
+      setError('Không thể cập nhật thông tin. Vui lòng thử lại.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const renderPersonalInfo = () => (
@@ -387,14 +417,19 @@ const Profile: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {profileData.skills.map((skill) => (
           <div
-            key={skill}
+            key={skill.name}
             className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200"
           >
-            <span className="text-blue-900 font-medium">{skill}</span>
+            <div>
+              <span className="text-blue-900 font-medium">{skill.name}</span>
+              {skill.level && (
+                <span className="text-blue-600 text-sm ml-2">({skill.level})</span>
+              )}
+            </div>
             {isEditing && (
               <button
                 onClick={() => removeSkill(skill)}
-                className="text-red-600 hover:text-red-700 ml-2"
+                className="text-red-600 hover:text-red-800 p-1"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -473,6 +508,16 @@ const Profile: React.FC = () => {
     }
   };
 
+  // Show loading spinner
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <span className="ml-3 text-gray-600">Đang tải thông tin profile...</span>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-6">
@@ -508,6 +553,29 @@ const Profile: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex">
+            <svg className="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.08 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <p className="text-red-800">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex">
+            <svg className="w-5 h-5 text-green-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <p className="text-green-800">{successMessage}</p>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow-sm">
         {/* Tabs */}

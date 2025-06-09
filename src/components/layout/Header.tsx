@@ -1,42 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  useEffect(() => {
-    // Mock user data for testing based on current route
-    if (location.pathname.includes('/user/')) {
-      setUser({
-        name: 'Nguyễn Văn A',
-        email: 'nguyenvana@email.com',
-        userType: 'jobseeker'
-      });
-    } else if (location.pathname.includes('/company/')) {
-      setUser({
-        name: 'TechCorp Vietnam',
-        email: 'hr@techcorp.vn',
-        userType: 'company'
-      });
-    } else {
-      // Check localStorage for actual authentication
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        setUser(JSON.parse(userData));
-      }
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsUserMenuOpen(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear local state even if API call fails
+      setIsUserMenuOpen(false);
+      navigate('/');
     }
-  }, [location]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    setIsUserMenuOpen(false);
-    navigate('/');
   };
 
   const isActive = (path: string) => {
