@@ -217,7 +217,7 @@ const Header = () => {
                           Settings
                         </Link>
                         <Link
-                          to="/change-password"
+                          to="/auth/change-password"
                           className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
@@ -379,7 +379,7 @@ const Header = () => {
                     Settings
                   </Link>
                   <Link 
-                    to="/change-password" 
+                    to="/auth/change-password" 
                     className="block px-4 py-2 text-gray-700 hover:text-emerald-600"
                     onClick={() => setIsMenuOpen(false)}
                   >

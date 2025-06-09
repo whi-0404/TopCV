@@ -185,8 +185,8 @@ const Login = () => {
                       <li key={index}>• {error}</li>
                     ))}
                   </ul>
-                </div>
-              </div>
+            </div>
+          </div>
             </motion.div>
           )}
 
@@ -238,15 +238,15 @@ const Login = () => {
               className="flex items-center justify-between"
             >
               <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="remember"
-                  name="remember"
-                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
-                  Remember me
-                </label>
+              <input
+                type="checkbox"
+                id="remember"
+                name="remember"
+                className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+              />
+              <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
+                Remember me
+              </label>
               </div>
               <motion.span whileHover={{ scale: 1.05 }}>
                 <Link to="/forgot-password" className="text-sm text-emerald-600 hover:text-emerald-700">
