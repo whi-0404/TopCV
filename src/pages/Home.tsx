@@ -1,7 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
 import SearchBar from '../components/home/SearchBar';
 import CategoryCard from '../components/home/CategoryCard';
 import JobCard from '../components/job/JobCard';
@@ -175,7 +173,6 @@ const mockJobs = [
 const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
       
       {/* Hero Section */}
       <section className="py-16 px-4">
@@ -414,8 +411,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

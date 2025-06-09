@@ -1,15 +1,38 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+
+// Layout Components
+import MainLayout from './components/layouts/MainLayout';
+import UserLayout from './components/layouts/UserLayout';
+import CompanyLayout from './components/layouts/CompanyLayout';
+import ProtectedRoute from './components/common/ProtectedRoute';
+
+// Main Pages
 import Home from './pages/Home';
 import Jobs from './pages/Jobs';
 import JobDetail from './pages/JobDetail';
-import CompanyProfile from './pages/CompanyProfile';
+import CompanyDetailPage from './pages/CompanyDetail';
 import Companies from './pages/Companies';
-import CompaniesSearch from './pages/CompaniesSearch';
-import Resume from './pages/Resume';
 import Blog from './pages/Blog';
 import Contact from './pages/Contact';
-import Profile from './pages/Profile';
+
+// User Dashboard Pages
+import UserDashboard from './pages/user/Dashboard';
+import UserApplications from './pages/user/Applications';
+import UserFavorites from './pages/user/Favorites';
+import UserMessages from './pages/user/Messages';
+import UserSettings from './pages/user/Settings';
+import UserProfile from './pages/user/Profile';
+import UserHelp from './pages/user/Help';
+
+// Company Dashboard Pages
+import CompanyDashboard from './pages/company/Dashboard';
+import CompanyJobs from './pages/company/Jobs';
+import CreateJob from './pages/company/CreateJob';
+import CompanyCandidates from './pages/company/Candidates';
+import CompanyMessages from './pages/company/Messages';
+import CompanyProfile from './pages/company/Profile';
+import CompanySettings from './pages/company/Settings';
 
 // Auth Components
 import RoleSelection from './pages/Auth/RoleSelection';
@@ -46,26 +69,60 @@ function App() {
     <>
       <ScrollToTop />
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={
-          isFromAuth ? (
-            <AnimatePresence mode="wait">
-              <PageTransition>
-                <Home />
-              </PageTransition>
-            </AnimatePresence>
-          ) : (
-            <Home />
-          )
+        {/* Main Routes with MainLayout */}
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={
+            isFromAuth ? (
+              <AnimatePresence mode="wait">
+                <PageTransition>
+                  <Home />
+                </PageTransition>
+              </AnimatePresence>
+            ) : (
+              <Home />
+            )
+          } />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/jobs/:id" element={<JobDetail />} />
+          <Route path="/companies/:id" element={<CompanyDetailPage />} />
+          <Route path="/companies" element={<Companies />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/contact" element={<Contact />} />
+        </Route>
+
+        {/* User Dashboard Routes */}
+        <Route path="/user/*" element={
+          <ProtectedRoute requiredRole="user">
+            <UserLayout>
+              <Routes>
+                <Route path="dashboard" element={<UserDashboard />} />
+                <Route path="applications" element={<UserApplications />} />
+                <Route path="favorites" element={<UserFavorites />} />
+                <Route path="messages" element={<UserMessages />} />
+                <Route path="profile" element={<UserProfile />} />
+                <Route path="settings" element={<UserSettings />} />
+                <Route path="help" element={<UserHelp />} />
+              </Routes>
+            </UserLayout>
+          </ProtectedRoute>
         } />
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/jobs/:id" element={<JobDetail />} />
-        <Route path="/companies/:id" element={<CompanyProfile />} />
-        <Route path="/companies" element={<Companies />} />
-        <Route path="/companies/search" element={<CompaniesSearch />} />
-        <Route path="/resume" element={<Resume />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/profile" element={<Profile />} />
+
+        {/* Company Dashboard Routes */}
+        <Route path="/company/*" element={
+          <ProtectedRoute requiredRole="company">
+            <CompanyLayout>
+              <Routes>
+                <Route path="dashboard" element={<CompanyDashboard />} />
+                <Route path="jobs" element={<CompanyJobs />} />
+                <Route path="jobs/new" element={<CreateJob />} />
+                <Route path="candidates" element={<CompanyCandidates />} />
+                <Route path="messages" element={<CompanyMessages />} />
+                <Route path="profile" element={<CompanyProfile />} />
+                <Route path="settings" element={<CompanySettings />} />
+              </Routes>
+            </CompanyLayout>
+          </ProtectedRoute>
+        } />
         
         {/* Auth Role Selection */}
         <Route path="/auth/login" element={<RoleSelection type="login" />} />
@@ -99,6 +156,9 @@ function App() {
         <Route path="/auth/otp-verification" element={<OtpVerification />} />
         <Route path="/auth/forgot-password" element={<ForgotPassword />} />
         <Route path="/auth/change-password" element={<ChangePassword />} />
+
+        {/* 404 Route */}
+        <Route path="*" element={<div className="text-center py-8"><h1>404 - Không tìm thấy trang</h1></div>} />
       </Routes>
     </>
   );

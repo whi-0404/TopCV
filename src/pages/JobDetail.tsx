@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
 import JobApplicationForm from '../components/job/JobApplicationForm';
 
 interface JobDetail {
@@ -94,8 +92,6 @@ const JobDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <main className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="flex items-start justify-between">
@@ -241,8 +237,6 @@ const JobDetail = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
 
       {showApplicationForm && (
         <JobApplicationForm
