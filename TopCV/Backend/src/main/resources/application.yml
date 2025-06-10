@@ -1,0 +1,66 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /TopCV
+    session:
+      cookie:
+        secure: true
+        http-only: true
+        same-site: strict
+
+spring:
+  application:
+    name: TopCV
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/TopCV"
+    username: postgres
+    password: quocbao285
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 5000
+      database: 1
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            protocols: TLSv1.2
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+        debug: false
+
+jwt:
+  signerKey: ${JWT_SIGNER_KEY}
+
+app:
+  name: ${APP_NAME:TopCV}
+  url: ${APP_URL:http://localhost:8080/TopCV}
+  security:
+    otp:
+      length: 6
+  python-service:
+    url: ${PYTHON_SERVICE_URL:http://localhost:8000}
+    timeout:
+      connect: 10000
+      read: 30000
+    retry:
+      max-attempts: 3
+      backoff-period: 1000
