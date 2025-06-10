@@ -81,8 +81,27 @@ public enum ErrorCode {
     APPLICATION_IDS_REQUIRED(2306,"Application ids required", HttpStatus.BAD_REQUEST),
     SOME_APPLICATIONS_NOT_FOUND(2307, "Some applications not found", HttpStatus.BAD_REQUEST),
 
-    RESUME_NOT_EXISTED(2401, "Resume not existed", HttpStatus.BAD_REQUEST),
-    RESUME_NOT_BELONGS_TO_USER(2402, "Resume not belongs to user", HttpStatus.BAD_REQUEST),;
+    RESUME_NOT_EXISTED(2401, "Resume not found", HttpStatus.NOT_FOUND),
+    RESUME_NOT_BELONGS_TO_USER(2402, "Resume does not belong to user", HttpStatus.FORBIDDEN),
+    RESUME_UPLOAD_FAILED(2403, "Failed to upload resume", HttpStatus.INTERNAL_SERVER_ERROR),
+    RESUME_DELETE_FAILED(2404, "Failed to delete resume", HttpStatus.INTERNAL_SERVER_ERROR),
+    RESUME_DOWNLOAD_FAILED(2405, "Failed to download resume", HttpStatus.INTERNAL_SERVER_ERROR),
+    RESUME_ALREADY_EXISTS(2406, "Resume already exists", HttpStatus.BAD_REQUEST),
+    RESUME_INVALID_FORMAT(2407, "Invalid resume format", HttpStatus.BAD_REQUEST),
+    RESUME_TOO_LARGE(2408, "Resume file is too large", HttpStatus.BAD_REQUEST),
+    RESUME_EMPTY(2409, "Resume file is empty", HttpStatus.BAD_REQUEST),
+
+    FILE_UPLOAD_FAILED(2501, "File upload failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_NOT_FOUND(2502, "File not found", HttpStatus.BAD_REQUEST),
+    FILE_READ_FAILED(2503, "File read failed", HttpStatus.BAD_REQUEST),
+    FILE_EMPTY(2504, "File empty", HttpStatus.BAD_REQUEST),
+    FILE_TOO_LARGE(2505, "File too large", HttpStatus.BAD_REQUEST),
+    INVALID_FILENAME(2506, "Invalid filename", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_TYPE(2507, "Invalid file type", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_FORMAT(2509, "Invalid file format", HttpStatus.BAD_REQUEST),
+    INVALID_PDF_FILE(2510, "Invalid PDF file", HttpStatus.BAD_REQUEST),
+    INVALID_DOC_FILE(2511, "Invalid document file", HttpStatus.BAD_REQUEST),
+    INVALID_DOCX_FILE(2512, "Invalid document file", HttpStatus.BAD_REQUEST),;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

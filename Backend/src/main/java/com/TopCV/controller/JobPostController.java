@@ -1,6 +1,7 @@
 package com.TopCV.controller;
 
 import com.TopCV.dto.request.JobPost.JobPostCreationRequest;
+import com.TopCV.dto.request.JobPost.JobPostSearchRequest;
 import com.TopCV.dto.request.JobPost.JobPostUpdateRequest;
 import com.TopCV.dto.response.ApiResponse;
 import com.TopCV.dto.response.JobPost.JobPostDashboardResponse;
@@ -20,6 +21,24 @@ import org.springframework.web.bind.annotation.*;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class JobPostController {
     JobPostService jobPostService;
+
+    // Public endpoints (no authentication required)
+    @PostMapping("/search")
+    public ApiResponse<PageResponse<JobPostResponse>> searchJobPosts(
+            @RequestBody JobPostSearchRequest request,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiResponse.<PageResponse<JobPostResponse>>builder()
+                .result(jobPostService.searchJobPosts(request, page, size))
+                .build();
+    }
+
+    @GetMapping("/{jobId}")
+    public ApiResponse<JobPostResponse> getJobPostDetail(@PathVariable Integer jobId) {
+        return ApiResponse.<JobPostResponse>builder()
+                .result(jobPostService.getJobPostDetail(jobId))
+                .build();
+    }
 
     @GetMapping("/company/{companyId}")
     public ApiResponse<PageResponse<JobPostDashboardResponse>> getJobPostsByCompany(

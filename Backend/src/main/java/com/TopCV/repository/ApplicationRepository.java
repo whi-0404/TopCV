@@ -18,4 +18,11 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
 
     @Query("Select a from Application a WHERE a.employer.id= :employerId")
     Page<Application> findAllByEmployer(@Param("employerId") String employerId, Pageable pageable);
+
+    @Query("SELECT a FROM Application a WHERE " +
+            "LOWER(a.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(a.user.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(a.jobPost.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(a.jobPost.company.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Application> searchApplications(@Param("keyword") String keyword, Pageable pageable);
 }

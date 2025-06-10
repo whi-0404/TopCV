@@ -1,6 +1,7 @@
 package com.TopCV.service;
 
 import com.TopCV.dto.request.JobPost.JobPostCreationRequest;
+import com.TopCV.dto.request.JobPost.JobPostSearchRequest;
 import com.TopCV.dto.request.JobPost.JobPostUpdateRequest;
 import com.TopCV.dto.response.JobPost.JobPostDashboardResponse;
 import com.TopCV.dto.response.JobPost.JobPostResponse;
@@ -11,7 +12,8 @@ public interface JobPostService {
     JobPostResponse updateJobPost(Integer jobId, JobPostUpdateRequest request);
     void deleteJobPost(Integer jobId);
     PageResponse<JobPostResponse> getMyJobPosts(int page, int size);
-//    JobPostDetailResponse getJobPostDetail(Integer jobId);
+    JobPostResponse getJobPostDetail(Integer jobId);
+    PageResponse<JobPostResponse> searchJobPosts(JobPostSearchRequest request, int page, int size);
     void approveJobPost(Integer jobId);
     void closeJobPost(Integer jobId);
     void reopenJobPost(Integer jobId);

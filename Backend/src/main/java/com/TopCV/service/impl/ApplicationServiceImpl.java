@@ -280,6 +280,21 @@ public class ApplicationServiceImpl implements ApplicationService {
         //send notification
     }
 
+    @Override
+    public PageResponse<ApplicationResponse> searchApplications(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<Application> pageData = applicationRepository.searchApplications(keyword, pageable);
+
+        return PageResponse.<ApplicationResponse>builder()
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .Data(pageData.getContent().stream()
+                        .map(applicationMapper::toResponse)
+                        .toList())
+                .build();
+    }
+
     private boolean isValidStatusTransition(ApplicationStatus currentStatus, ApplicationStatus newStatus) {
         return switch (currentStatus) {
             case PENDING -> newStatus == ApplicationStatus.REVIEWING ||

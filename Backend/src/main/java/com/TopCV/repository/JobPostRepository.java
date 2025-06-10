@@ -4,12 +4,17 @@ import com.TopCV.entity.JobPost;
 import com.TopCV.enums.JobPostStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public interface JobPostRepository extends JpaRepository<JobPost, Integer> {
     Page<JobPost> findByCompanyId(Integer companyId, Pageable pageable);
 
     Page<JobPost> findByCompanyIdAndStatus(Integer companyId, JobPostStatus status, Pageable pageable);
+
+    Page<JobPost> findAll(Specification<JobPost> spec, Pageable pageable);
 }

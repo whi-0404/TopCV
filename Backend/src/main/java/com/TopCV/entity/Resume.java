@@ -24,6 +24,9 @@ public class Resume {
 
     @Column(name = "file_path")
     String filePath;
+    
+    @Column(name = "resume_name")
+    String resumeName;
 
     @Column(name = "created_at")
     LocalDateTime createdAt;

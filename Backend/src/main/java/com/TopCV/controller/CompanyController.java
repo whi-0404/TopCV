@@ -1,6 +1,7 @@
 package com.TopCV.controller;
 
 import com.TopCV.dto.request.CompanyCreationRequest;
+import com.TopCV.dto.request.CompanySearchRequest;
 import com.TopCV.dto.response.ApiResponse;
 import com.TopCV.dto.response.CompanyDashboardResponse;
 import com.TopCV.dto.response.CompanyResponse;
@@ -104,6 +105,16 @@ public class CompanyController {
     public ApiResponse<Boolean> checkFollowStatus(@PathVariable Integer id) {
         return ApiResponse.<Boolean>builder()
                 .result(companyService.isFollowing(id))
+                .build();
+    }
+
+    @PostMapping("/search")
+    public ApiResponse<PageResponse<CompanyDashboardResponse>> searchCompanies(
+            @RequestBody CompanySearchRequest request,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiResponse.<PageResponse<CompanyDashboardResponse>>builder()
+                .result(companyService.searchCompanies(request, page, size))
                 .build();
     }
 }

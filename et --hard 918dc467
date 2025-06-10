@@ -1,0 +1,19 @@
+[33me9dadea4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelop[m[33m, [m[1;31morigin/develop[m[33m)[m HEAD@{0}: reset: moving to HEAD~1
+[33m918dc467[m HEAD@{1}: commit: update
+[33me9dadea4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelop[m[33m, [m[1;31morigin/develop[m[33m)[m HEAD@{2}: commit: feat: favorite jobs
+[33m4dee09d6[m HEAD@{3}: commit: feat: close, reopen, approve, reject, suspend jobPost
+[33m1302890a[m HEAD@{4}: commit: feat: CRUD jobPost
+[33m66c0310d[m HEAD@{5}: commit: feat: follow company
+[33ma39d59c0[m HEAD@{6}: commit: feat: update review, company, add skill, fix error
+[33m79f04666[m HEAD@{7}: commit: merge branch company into develop
+[33m983222c5[m[33m ([m[1;31morigin/company[m[33m)[m HEAD@{8}: merge origin/company: Fast-forward
+[33mef1a138c[m HEAD@{9}: reset: moving to HEAD
+[33mef1a138c[m HEAD@{10}: commit: fix: throw error token
+[33m1d9895e1[m HEAD@{11}: commit: feat: user + auth
+[33m9b16b104[m HEAD@{12}: commit: feat: email + otp
+[33m48f19170[m HEAD@{13}: commit: feat: security config
+[33m80b22259[m HEAD@{14}: commit: add: user repo + mapper
+[33me8305c2d[m HEAD@{15}: commit: update: base exception handler + validation
+[33m890daa3e[m HEAD@{16}: commit: feat: add entity and base validation + exception
+[33m6351629d[m[33m ([m[1;31morigin/master[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{17}: checkout: moving from master to develop
+[33m6351629d[m[33m ([m[1;31morigin/master[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{18}: commit (initial): add first folders

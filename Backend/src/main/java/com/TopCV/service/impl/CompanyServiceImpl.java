@@ -1,6 +1,7 @@
 package com.TopCV.service.impl;
 
 import com.TopCV.dto.request.CompanyCreationRequest;
+import com.TopCV.dto.request.CompanySearchRequest;
 import com.TopCV.dto.response.*;
 import com.TopCV.entity.Company;
 import com.TopCV.entity.CompanyCategory;
@@ -9,7 +10,6 @@ import com.TopCV.exception.AppException;
 import com.TopCV.exception.ErrorCode;
 import com.TopCV.mapper.CompanyCategoryMapper;
 import com.TopCV.mapper.CompanyMapper;
-import com.TopCV.mapper.CompanyReviewMapper;
 import com.TopCV.repository.CompanyCategoryRepository;
 import com.TopCV.repository.CompanyRepository;
 import com.TopCV.repository.CompanyReviewRepository;
@@ -25,11 +25,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.Predicate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -224,7 +226,70 @@ public class CompanyServiceImpl implements CompanyService {
                 .anyMatch(company -> company.getId() == companyId);
     }
 
+    @Override
+    public PageResponse<CompanyDashboardResponse> searchCompanies(CompanySearchRequest request, int page, int size) {
+        Specification<Company> spec = buildSearchSpecification(request);
+        
+        Sort sort = buildSort(request.getSortBy(), request.getSortDirection());
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
 
+        Page<Company> pageData = ((org.springframework.data.jpa.repository.JpaSpecificationExecutor<Company>) companyRepository).findAll(spec, pageable);
 
+        return PageResponse.<CompanyDashboardResponse>builder()
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .Data(pageData.getContent().stream()
+                        .map(companyMapper::toCompanyDashboard)
+                        .toList())
+                .build();
+    }
 
+    private Specification<Company> buildSearchSpecification(CompanySearchRequest request) {
+        return (root, query, criteriaBuilder) -> {
+            var predicates = criteriaBuilder.conjunction();
+
+            // Only show active companies for public search
+            predicates = criteriaBuilder.and(predicates,
+                    criteriaBuilder.equal(root.get("active"), true));
+
+            if (request.getKeyword() != null && !request.getKeyword().trim().isEmpty()) {
+                String keyword = "%" + request.getKeyword().toLowerCase() + "%";
+                var keywordPredicate = criteriaBuilder.or(
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), keyword),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), keyword)
+                );
+                predicates = criteriaBuilder.and(predicates, keywordPredicate);
+            }
+
+            if (request.getLocation() != null && !request.getLocation().trim().isEmpty()) {
+                String location = "%" + request.getLocation().toLowerCase() + "%";
+                predicates = criteriaBuilder.and(predicates,
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("address")), location));
+            }
+
+            if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+                var categoryJoin = root.join("categories");
+                predicates = criteriaBuilder.and(predicates,
+                        categoryJoin.get("id").in(request.getCategoryIds()));
+            }
+
+            if (request.getEmployeeRange() != null && !request.getEmployeeRange().trim().isEmpty()) {
+                String employeeRange = "%" + request.getEmployeeRange().toLowerCase() + "%";
+                predicates = criteriaBuilder.and(predicates,
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("employeeRange")), employeeRange));
+            }
+
+            return predicates;
+        };
+    }
+
+    private Sort buildSort(String sortBy, String sortDirection) {
+        if (sortBy == null || sortBy.isEmpty()) {
+            sortBy = "followerCount"; // Default sort by follower count
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection != null ? sortDirection : "DESC");
+        return Sort.by(direction, sortBy);
+    }
 }

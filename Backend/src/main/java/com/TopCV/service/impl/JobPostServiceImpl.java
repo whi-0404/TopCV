@@ -1,6 +1,7 @@
 package com.TopCV.service.impl;
 
 import com.TopCV.dto.request.JobPost.JobPostCreationRequest;
+import com.TopCV.dto.request.JobPost.JobPostSearchRequest;
 import com.TopCV.dto.request.JobPost.JobPostUpdateRequest;
 import com.TopCV.dto.response.JobPost.JobPostDashboardResponse;
 import com.TopCV.dto.response.JobPost.JobPostResponse;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -359,5 +361,116 @@ public class JobPostServiceImpl implements JobPostService {
 
         return user.getFavoriteJobs().stream()
                 .anyMatch(job -> job.getId() == jobId);
+    }
+
+    private Specification<JobPost> buildSearchSpecification(JobPostSearchRequest request) {
+        return (root, query, criteriaBuilder) -> {
+            var predicates = criteriaBuilder.conjunction();
+
+            // Only show active jobs for public search
+            predicates = criteriaBuilder.and(predicates,
+                    criteriaBuilder.equal(root.get("status"), JobPostStatus.ACTIVE));
+
+            // Only show jobs with future deadlines
+            predicates = criteriaBuilder.and(predicates,
+                    criteriaBuilder.greaterThan(root.get("deadline"), LocalDate.now()));
+
+            if (request.getKeyword() != null && !request.getKeyword().trim().isEmpty()) {
+                String keyword = "%" + request.getKeyword().toLowerCase() + "%";
+                var keywordPredicate = criteriaBuilder.or(
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), keyword),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), keyword),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("requirements")), keyword),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.join("company").get("name")), keyword)
+                );
+                predicates = criteriaBuilder.and(predicates, keywordPredicate);
+            }
+
+            if (request.getLocation() != null && !request.getLocation().trim().isEmpty()) {
+                String location = "%" + request.getLocation().toLowerCase() + "%";
+                predicates = criteriaBuilder.and(predicates,
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("location")), location));
+            }
+
+            if (request.getJobTypeIds() != null && !request.getJobTypeIds().isEmpty()) {
+                predicates = criteriaBuilder.and(predicates,
+                        root.get("type").get("id").in(request.getJobTypeIds()));
+            }
+
+            if (request.getJobLevelIds() != null && !request.getJobLevelIds().isEmpty()) {
+                predicates = criteriaBuilder.and(predicates,
+                        root.get("level").get("id").in(request.getJobLevelIds()));
+            }
+
+            if (request.getCompanyIds() != null && !request.getCompanyIds().isEmpty()) {
+                predicates = criteriaBuilder.and(predicates,
+                        root.get("company").get("id").in(request.getCompanyIds()));
+            }
+
+            if (request.getSkillIds() != null && !request.getSkillIds().isEmpty()) {
+                var skillJoin = root.join("skills");
+                predicates = criteriaBuilder.and(predicates,
+                        skillJoin.get("id").in(request.getSkillIds()));
+            }
+
+            if (request.getSalaryRange() != null && !request.getSalaryRange().trim().isEmpty()) {
+                String salary = "%" + request.getSalaryRange().toLowerCase() + "%";
+                predicates = criteriaBuilder.and(predicates,
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("salary")), salary));
+            }
+
+            if (request.getExperienceLevel() != null && !request.getExperienceLevel().trim().isEmpty()) {
+                String experience = "%" + request.getExperienceLevel().toLowerCase() + "%";
+                predicates = criteriaBuilder.and(predicates,
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("experienceRequired")), experience));
+            }
+
+            return predicates;
+        };
+    }
+
+    private Sort buildSort(String sortBy, String sortDirection) {
+        if (sortBy == null || sortBy.isEmpty()) {
+            sortBy = "createdAt"; // Default sort by creation date
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection != null ? sortDirection : "DESC");
+        return Sort.by(direction, sortBy);
+    }
+
+    @Override
+    public JobPostResponse getJobPostDetail(Integer jobId) {
+        JobPost jobPost = jobPostRepository.findById(jobId)
+                .orElseThrow(() -> new AppException(ErrorCode.JOB_POST_NOT_EXISTED));
+        
+        return jobPostMapper.toResponse(jobPost);
+    }
+
+    @Override
+    public PageResponse<JobPostResponse> searchJobPosts(JobPostSearchRequest request, int page, int size) {
+        Specification<JobPost> spec = buildSearchSpecification(request);
+
+        Sort sort = buildSort(request.getSortBy(), request.getSortDirection());
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+
+        Page<JobPost> pageData = jobPostRepository.findAll(spec, pageable);
+
+        String currentUserEmail = null;
+        try {
+            currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        } catch (Exception e) {
+            // Anonymous user
+        }
+
+        final String userEmail = currentUserEmail;
+
+        return PageResponse.<JobPostResponse>builder()
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .Data(pageData.getContent().stream()
+                        .map(job -> jobPostMapper.toResponse(job))
+                        .toList())
+                .build();
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 public enum FileType {
-    RESUME("resumes", List.of("pdf"), 10 * 1024 * 1024, true), // 10MB, PDF only
+    RESUME("resumes", List.of("pdf", "doc", "docx"), 10 * 1024 * 1024, true), // 10MB, Multiple formats
 
     AVATAR("avatars", Arrays.asList("jpg", "jpeg", "png", "gif"), 5 * 1024 * 1024, true), // 5MB
 
@@ -38,6 +38,8 @@ public enum FileType {
             case "png" -> "image/png";
             case "gif" -> "image/gif";
             case "svg" -> "image/svg+xml";
+            case "doc" -> "application/msword";
+            case "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
             default -> "application/octet-stream";
         };
     }

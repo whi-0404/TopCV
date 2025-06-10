@@ -1,6 +1,7 @@
 package com.TopCV.service;
 
 import com.TopCV.dto.request.CompanyCreationRequest;
+import com.TopCV.dto.request.CompanySearchRequest;
 import com.TopCV.dto.response.CompanyDashboardResponse;
 import com.TopCV.dto.response.CompanyResponse;
 import com.TopCV.dto.response.PageResponse;
@@ -18,4 +19,5 @@ public interface CompanyService {
     void followCompany(Integer companyId);
     void unfollowCompany(Integer companyId);
     boolean isFollowing(Integer companyId);
+    PageResponse<CompanyDashboardResponse> searchCompanies(CompanySearchRequest request, int page, int size);
 }

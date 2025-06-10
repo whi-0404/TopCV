@@ -55,15 +55,15 @@ app:
     otp:
       length: 6
 
-firebase:
-  config:
-    project-id: ${FIREBASE_PROJECT_ID}
-    storage-bucket: ${FIREBASE_STORAGE_BUCKET}
-    client-email: ${FIREBASE_CLIENT_EMAIL}
-    private-key: ${FIREBASE_PRIVATE_KEY}
-    private-key-id: ${FIREBASE_PRIVATE_KEY_ID}
 
-  storage:
-    base-url: https://firebasestorage.googleapis.com/v0/b/topcv-job-portal-xxxxx.appspot.com/o
-    public-folder: public
-    private-folder: private
+
+# Logging configuration for debugging
+logging:
+  level:
+    com.google.firebase: INFO
+    com.google.cloud.storage: INFO
+    com.TopCV.service.impl.FirebaseStorageServiceImpl: DEBUG
+    com.TopCV.configuration.FirebaseConfig: DEBUG
+
+file:
+  upload-dir: uploads

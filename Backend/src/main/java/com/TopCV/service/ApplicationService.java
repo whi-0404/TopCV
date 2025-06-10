@@ -21,4 +21,6 @@ public interface ApplicationService {
     void updateApplicationStatus(Integer applicationId, ApplicationStatusUpdateRequest request);
 
     void bulkUpdateApplicationStatus(ApplicationStatusUpdateRequest request);
+
+    PageResponse<ApplicationResponse> searchApplications(String keyword, int page, int size);
 }
