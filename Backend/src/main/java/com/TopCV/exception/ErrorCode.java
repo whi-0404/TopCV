@@ -71,7 +71,31 @@ public enum ErrorCode {
     JOB_POST_NOT_PENDING(2207, "Job post not pending", HttpStatus.BAD_REQUEST),
     JOB_POST_NOT_ACTIVE(2208, "Job post not active", HttpStatus.BAD_REQUEST),
     ALREADY_FAVORITED_JOB(2209, "Job already favorited", HttpStatus.BAD_REQUEST),
-    NOT_FAVORITED_JOB(2210, "Job not favorited", HttpStatus.BAD_REQUEST),;
+    NOT_FAVORITED_JOB(2210, "Job not favorited", HttpStatus.BAD_REQUEST),
+
+    ALREADY_APPLIED_JOB(2301, "Job already applied", HttpStatus.BAD_REQUEST),
+    APPLICATION_NOT_EXISTED(2302, "Application not exists", HttpStatus.BAD_REQUEST),
+    CANNOT_WITHDRAW_APPLICATION(2303, "Can't withdraw application", HttpStatus.BAD_REQUEST),
+    INVALID_APPLICATION_STATUS(2304, "Invalid application status", HttpStatus.BAD_REQUEST),
+    INVALID_STATUS_TRANSITION(2305, "Invalid status transition", HttpStatus.BAD_REQUEST),
+    APPLICATION_IDS_REQUIRED(2306,"Application ids required", HttpStatus.BAD_REQUEST),
+    SOME_APPLICATIONS_NOT_FOUND(2307, "Some applications not found", HttpStatus.BAD_REQUEST),
+
+    RESUME_NOT_EXISTED(2401, "Resume not existed", HttpStatus.BAD_REQUEST),
+    RESUME_NOT_BELONGS_TO_USER(2402, "Resume not belongs to user", HttpStatus.BAD_REQUEST),
+
+    FILE_UPLOAD_FAILED(2501, "File upload failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_NOT_FOUND(2502, "File not found", HttpStatus.BAD_REQUEST),
+    FILE_READ_FAILED(2503, "File read failed", HttpStatus.BAD_REQUEST),
+    FILE_EMPTY(2504, "File empty", HttpStatus.BAD_REQUEST),
+    FILE_TOO_LARGE(2505, "File too large", HttpStatus.BAD_REQUEST),
+    INVALID_FILENAME(2506, "Invalid filename", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_TYPE(2507, "Invalid file type", HttpStatus.BAD_REQUEST),
+    RESUME_INVALID_FORMAT(2508, "Resume invalid format", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_FORMAT(2509, "Invalid file format", HttpStatus.BAD_REQUEST),
+    INVALID_PDF_FILE(2510, "Invalid PDF file", HttpStatus.BAD_REQUEST),
+    INVALID_DOC_FILE(2511, "Invalid document file", HttpStatus.BAD_REQUEST),
+    INVALID_DOCX_FILE(2512, "Invalid document file", HttpStatus.BAD_REQUEST),;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

@@ -2,6 +2,7 @@ package com.TopCV.mapper;
 
 import com.TopCV.dto.request.UserCreationRequest;
 import com.TopCV.dto.request.UserUpdateRequest;
+import com.TopCV.dto.response.UserDashboardResponse;
 import com.TopCV.dto.response.UserResponse;
 import com.TopCV.entity.User;
 import org.mapstruct.Mapper;
@@ -17,4 +18,6 @@ public interface UserMapper {
     UserResponse toResponse(User user);
 
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
+
+    UserDashboardResponse toDashBoardUser(User user);
 }

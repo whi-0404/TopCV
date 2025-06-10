@@ -2,6 +2,7 @@ package com.TopCV.mapper;
 
 import com.TopCV.dto.request.UserCreationRequest;
 import com.TopCV.dto.request.UserUpdateRequest;
+import com.TopCV.dto.response.UserDashboardResponse;
 import com.TopCV.dto.response.UserResponse;
 import com.TopCV.entity.User;
 import com.TopCV.enums.Role;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-06-02T16:41:13+0700",
+    date = "2025-06-08T18:47:15+0700",
     comments = "version: 1.6.2, compiler: javac, environment: Java 23 (Oracle Corporation)"
 )
 @Component
@@ -79,5 +80,21 @@ public class UserMapperImpl implements UserMapper {
         if ( request.getDob() != null ) {
             user.setDob( request.getDob() );
         }
+    }
+
+    @Override
+    public UserDashboardResponse toDashBoardUser(User user) {
+        if ( user == null ) {
+            return null;
+        }
+
+        UserDashboardResponse.UserDashboardResponseBuilder userDashboardResponse = UserDashboardResponse.builder();
+
+        userDashboardResponse.id( user.getId() );
+        userDashboardResponse.fullname( user.getFullname() );
+        userDashboardResponse.avt( user.getAvt() );
+        userDashboardResponse.role( user.getRole() );
+
+        return userDashboardResponse.build();
     }
 }
