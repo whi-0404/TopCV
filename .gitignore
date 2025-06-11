@@ -1,0 +1,90 @@
+
+frontend/node_modules/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
+
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/out/
+
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+.env
+*.env
+config.env
+interview_mock/config.env
+
+venv/
+env/
+ENV/
+interview_mock/venv/
+
+
+*.db
+*.sqlite3
+
+
+interview_mock/uploads/
+uploads/
+
+interview_mock/TopCV/Backend/src/main/resources/application.yml
+interview_mock/TopCV/Backend/target/
+interview_mock/TopCV/Backend/.mvn/wrapper/maven-wrapper.jar
+
+
+interview_mock/TopCV/Backend/.gradle/
+interview_mock/TopCV/Backend/build/
+# Spring Boot
+interview_mock/TopCV/Backend/application.properties
+interview_mock/TopCV/Backend/application-*.properties
+
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*.iml
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Temporary folders
+tmp/
+temp/
+
+# API keys and sensitive data
+**/config.env
+**/.env
+**/secrets.json
+**/credentials.json
+
+# PDF files (uncomment if you don't want to track PDFs)
+# *.pdf
+
+# Backup files
+*.bak
+*.backup 

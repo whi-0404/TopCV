@@ -1,0 +1,10 @@
+export { default as Profile } from './Profile';
+export { default as Dashboard } from './Dashboard';
+export { default as Jobs } from './Jobs';
+export { default as CreateJob } from './CreateJob';
+export { default as JobEdit } from './JobEdit';
+export { default as JobForm } from './JobForm';
+export { default as Candidates } from './Candidates';
+export { default as Messages } from './Messages';
+export { default as Settings } from './Settings';
+export { default as CreateCompany } from './CreateCompany'; 
