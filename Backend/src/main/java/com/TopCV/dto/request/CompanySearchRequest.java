@@ -1,4 +1,4 @@
-package com.TopCV.dto.request.JobPost;
+package com.TopCV.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -10,18 +10,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class JobPostSearchRequest {
+public class CompanySearchRequest {
     String keyword;
     String location;
-    List<Integer> jobTypeIds;
-    List<Integer> jobLevelIds;
-    List<Integer> skillIds;
-    Integer companyId;
-    String salaryRange;
-    String experienceLevel;
+    List<Integer> categoryIds;
+    String employeeRange;
     String status;
-
     // Sorting options
-    String sortBy; // title, salary, createdAt, deadline
+    String sortBy;
     String sortDirection; // asc, desc
 }

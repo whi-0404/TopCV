@@ -281,7 +281,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public PageResponse<ApplicationResponse> searchApplications(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<Application> pageData = applicationRepository.searchApplications(keyword, pageable);

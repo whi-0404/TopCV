@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-06-08T18:47:15+0700",
+    date = "2025-06-14T14:59:57+0700",
     comments = "version: 1.6.2, compiler: javac, environment: Java 23 (Oracle Corporation)"
 )
 @Component
@@ -88,13 +88,8 @@ public class UserMapperImpl implements UserMapper {
             return null;
         }
 
-        UserDashboardResponse.UserDashboardResponseBuilder userDashboardResponse = UserDashboardResponse.builder();
+        UserDashboardResponse userDashboardResponse = new UserDashboardResponse();
 
-        userDashboardResponse.id( user.getId() );
-        userDashboardResponse.fullname( user.getFullname() );
-        userDashboardResponse.avt( user.getAvt() );
-        userDashboardResponse.role( user.getRole() );
-
-        return userDashboardResponse.build();
+        return userDashboardResponse;
     }
 }

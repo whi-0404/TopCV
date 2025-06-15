@@ -192,6 +192,14 @@ public class JobPostServiceImpl implements JobPostService {
     }
 
     @Override
+    public JobPostResponse getJobPostDetail(int jobId) {
+        JobPost jobPost = jobPostRepository.findById(jobId)
+                .orElseThrow(() -> new AppException(ErrorCode.JOB_POST_NOT_EXISTED));
+
+        return jobPostMapper.toResponse(jobPost);
+    }
+
+    @Override
     @Transactional
     @PreAuthorize("hasRole('EMPLOYER')")
     public void closeJobPost(Integer jobId) {
@@ -367,49 +375,79 @@ public class JobPostServiceImpl implements JobPostService {
         return (root, query, criteriaBuilder) -> {
             var predicates = criteriaBuilder.conjunction();
 
-            // Only show active jobs for public search
-            predicates = criteriaBuilder.and(predicates,
-                    criteriaBuilder.equal(root.get("status"), JobPostStatus.ACTIVE));
+            // Default: Only show active jobs for public search (unless status is specified)
+            if (request.getStatus() == null) {
+                predicates = criteriaBuilder.and(predicates,
+                        criteriaBuilder.equal(root.get("status"), JobPostStatus.ACTIVE));
 
-            // Only show jobs with future deadlines
-            predicates = criteriaBuilder.and(predicates,
-                    criteriaBuilder.greaterThan(root.get("deadline"), LocalDateTime.now()));
+                // Only show jobs with future deadlines for active jobs
+                predicates = criteriaBuilder.and(predicates,
+                        criteriaBuilder.greaterThanOrEqualTo(root.get("deadline"), LocalDate.now()));
+            } else {
+                // Filter by specific status if provided
+                try {
+                    JobPostStatus status = JobPostStatus.valueOf(request.getStatus().toUpperCase());
+                    predicates = criteriaBuilder.and(predicates,
+                            criteriaBuilder.equal(root.get("status"), status));
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid job post status: {}", request.getStatus());
+                }
+            }
 
+            // Keyword search (title, description, requirements)
             if (request.getKeyword() != null && !request.getKeyword().trim().isEmpty()) {
                 String keyword = "%" + request.getKeyword().toLowerCase() + "%";
                 var keywordPredicate = criteriaBuilder.or(
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), keyword),
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), keyword),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("requirements")), keyword)
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("requirements")), keyword),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("benefits")), keyword)
                 );
                 predicates = criteriaBuilder.and(predicates, keywordPredicate);
             }
 
+            // Location filter
             if (request.getLocation() != null && !request.getLocation().trim().isEmpty()) {
                 String location = "%" + request.getLocation().toLowerCase() + "%";
                 predicates = criteriaBuilder.and(predicates,
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("location")), location));
             }
 
+            // Job type filter
             if (request.getJobTypeIds() != null && !request.getJobTypeIds().isEmpty()) {
                 predicates = criteriaBuilder.and(predicates,
                         root.get("type").get("id").in(request.getJobTypeIds()));
             }
 
+            // Job level filter
             if (request.getJobLevelIds() != null && !request.getJobLevelIds().isEmpty()) {
                 predicates = criteriaBuilder.and(predicates,
                         root.get("level").get("id").in(request.getJobLevelIds()));
             }
 
-            if (request.getCompanyIds() != null && !request.getCompanyIds().isEmpty()) {
+            // Company filter
+            if (request.getCompanyId() != null) {
                 predicates = criteriaBuilder.and(predicates,
-                        root.get("company").get("id").in(request.getCompanyIds()));
+                        criteriaBuilder.equal(root.get("company").get("id"), request.getCompanyId()));
             }
 
+            // Skills filter
             if (request.getSkillIds() != null && !request.getSkillIds().isEmpty()) {
                 var skillJoin = root.join("skills");
                 predicates = criteriaBuilder.and(predicates,
                         skillJoin.get("id").in(request.getSkillIds()));
+            }
+
+            if(request.getSalaryRange() != null) {
+                predicates = criteriaBuilder.and(predicates,
+                        criteriaBuilder.equal(root.get("salary"), request.getSalaryRange()));
+            }
+
+            // Experience level filter
+            if (request.getExperienceLevel() != null && !request.getExperienceLevel().trim().isEmpty()) {
+                String experienceLevel = "%" + request.getExperienceLevel().toLowerCase() + "%";
+                predicates = criteriaBuilder.and(predicates,
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("experienceRequired")), experienceLevel));
             }
 
             return predicates;
@@ -417,30 +455,48 @@ public class JobPostServiceImpl implements JobPostService {
     }
 
     @Override
-    public PageResponse<JobPostResponse> searchJobPosts(JobPostSearchRequest request, int page, int size) {
+    public PageResponse<JobPostDashboardResponse> searchJobPosts(JobPostSearchRequest request, int page, int size) {
         Specification<JobPost> spec = buildSearchSpecification(request);
-
         Sort sort = buildSort(request.getSortBy(), request.getSortDirection());
         Pageable pageable = PageRequest.of(page - 1, size, sort);
 
         Page<JobPost> pageData = jobPostRepository.findAll(spec, pageable);
 
-        String currentUserEmail = null;
-        try {
-            currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        } catch (Exception e) {
-            // Anonymous user
-        }
-
-        final String userEmail = currentUserEmail;
-
-        return PageResponse.<JobPostResponse>builder()
+        return PageResponse.<JobPostDashboardResponse>builder()
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
                 .Data(pageData.getContent().stream()
-                        .map(job -> jobPostMapper.toResponse(job, userEmail))
+                        .map(jobPostMapper::toJobPostDashboard)
                         .toList())
                 .build();
+    }
+
+    private Sort buildSort(String sortBy, String sortDirection) {
+        Sort.Direction direction = Sort.Direction.DESC;
+
+        if ("asc".equalsIgnoreCase(sortDirection)) {
+            direction = Sort.Direction.ASC;
+        }
+
+        String sortField = "createdAt"; // Default sort field
+
+        if (sortBy != null && !sortBy.trim().isEmpty()) {
+            switch (sortBy.toLowerCase()) {
+                case "title" -> sortField = "title";
+                case "salary" -> sortField = "salary";
+                case "createdat" -> sortField = "createdAt";
+                case "deadline" -> sortField = "deadline";
+                case "appliedcount" -> sortField = "appliedCount";
+                case "company" -> sortField = "company.name";
+                case "location" -> sortField = "location";
+                default -> {
+                    log.warn("Invalid sort field: {}, using default 'createdAt'", sortBy);
+                    sortField = "createdAt";
+                }
+            }
+        }
+
+        return Sort.by(direction, sortField);
     }
 }

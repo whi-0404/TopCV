@@ -83,6 +83,11 @@ public enum ErrorCode {
 
     RESUME_NOT_EXISTED(2401, "Resume not existed", HttpStatus.BAD_REQUEST),
     RESUME_NOT_BELONGS_TO_USER(2402, "Resume not belongs to user", HttpStatus.BAD_REQUEST),
+    RESUME_EMPTY(2403, "Resume empty", HttpStatus.BAD_REQUEST),
+    RESUME_TOO_LARGE(2404, "Resume too large", HttpStatus.BAD_REQUEST),
+    RESUME_UPLOAD_FAILED(2405, "Resume upload failed", HttpStatus.BAD_REQUEST),
+    RESUME_DOWNLOAD_FAILED(2406, "Resume download failed", HttpStatus.BAD_REQUEST),
+    RESUME_DELETE_FAILED(2407, "Resume delete failed", HttpStatus.BAD_REQUEST),
 
     FILE_UPLOAD_FAILED(2501, "File upload failed", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_NOT_FOUND(2502, "File not found", HttpStatus.BAD_REQUEST),

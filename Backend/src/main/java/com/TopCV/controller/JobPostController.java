@@ -1,6 +1,7 @@
 package com.TopCV.controller;
 
 import com.TopCV.dto.request.JobPost.JobPostCreationRequest;
+import com.TopCV.dto.request.JobPost.JobPostSearchRequest;
 import com.TopCV.dto.request.JobPost.JobPostUpdateRequest;
 import com.TopCV.dto.response.ApiResponse;
 import com.TopCV.dto.response.JobPost.JobPostDashboardResponse;
@@ -14,12 +15,65 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Parameter;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/job-posts")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class JobPostController {
     JobPostService jobPostService;
+
+    @GetMapping("/search")
+    public ApiResponse<PageResponse<JobPostDashboardResponse>> searchJobPosts(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) List<Integer> jobTypeIds,
+            @RequestParam(required = false) List<Integer> jobLevelIds,
+            @RequestParam(required = false) List<Integer> skillIds,
+            @RequestParam(required = false) Integer companyId,
+            @RequestParam(required = false) String experienceLevel,
+            @RequestParam(required = false) String salaryRange,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+
+        JobPostSearchRequest searchRequest = JobPostSearchRequest.builder()
+                .keyword(keyword)
+                .location(location)
+                .jobTypeIds(jobTypeIds)
+                .jobLevelIds(jobLevelIds)
+                .skillIds(skillIds)
+                .companyId(companyId)
+                .experienceLevel(experienceLevel)
+                .salaryRange(salaryRange)
+                .status(status)
+                .sortBy(sortBy)
+                .sortDirection(sortDirection)
+                .build();
+
+        return ApiResponse.<PageResponse<JobPostDashboardResponse>>builder()
+                .result(jobPostService.searchJobPosts(searchRequest, page, size))
+                .build();
+    }
+
+    @GetMapping("/trending")
+    public ApiResponse<PageResponse<JobPostDashboardResponse>> getTrendingJobPosts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        JobPostSearchRequest trendingRequest = JobPostSearchRequest.builder()
+                .sortBy("appliedCount")
+                .sortDirection("desc")
+                .build();
+
+        return ApiResponse.<PageResponse<JobPostDashboardResponse>>builder()
+                .result(jobPostService.searchJobPosts(trendingRequest, page, size))
+                .build();
+    }
 
     @GetMapping("/company/{companyId}")
     public ApiResponse<PageResponse<JobPostDashboardResponse>> getJobPostsByCompany(
@@ -62,6 +116,14 @@ public class JobPostController {
 
         return ApiResponse.<PageResponse<JobPostResponse>>builder()
                 .result(jobPostService.getMyJobPosts(page, size))
+                .build();
+    }
+
+    @GetMapping("/{jobId}")
+    public ApiResponse<JobPostResponse> getJobPostDetail(@PathVariable Integer jobId) {
+
+        return ApiResponse.<JobPostResponse>builder()
+                .result(jobPostService.getJobPostDetail(jobId))
                 .build();
     }
 

@@ -1,6 +1,7 @@
 package com.TopCV.controller;
 
 import com.TopCV.dto.request.CompanyCreationRequest;
+import com.TopCV.dto.request.CompanySearchRequest;
 import com.TopCV.dto.response.ApiResponse;
 import com.TopCV.dto.response.CompanyDashboardResponse;
 import com.TopCV.dto.response.CompanyResponse;
@@ -30,6 +31,34 @@ import java.util.List;
 public class CompanyController {
 
     final CompanyService companyService;
+
+
+    @GetMapping("/search")
+    public ApiResponse<PageResponse<CompanyDashboardResponse>> searchCompanies(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) List<Integer> categoryIds,
+            @RequestParam(required = false) String employeeRange,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false, defaultValue = "followerCount") String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        CompanySearchRequest searchRequest = CompanySearchRequest.builder()
+                .keyword(keyword)
+                .location(location)
+                .categoryIds(categoryIds)
+                .employeeRange(employeeRange)
+                .status(status)
+                .sortBy(sortBy)
+                .sortDirection(sortDirection)
+                .build();
+
+        return ApiResponse.<PageResponse<CompanyDashboardResponse>>builder()
+                .result(companyService.searchCompanies(searchRequest, page, size))
+                .build();
+    }
 
     @PostMapping
     public ApiResponse<CompanyResponse> createCompany(@RequestBody @Valid CompanyCreationRequest request) {

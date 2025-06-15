@@ -54,3 +54,15 @@ app:
   security:
     otp:
       length: 6
+
+file:
+  upload-dir: uploads
+  max-size:
+    resume: 10485760
+    avatar: 5242880
+    company-logo: 2097152
+    default: 10485760
+  allowed-extensions:
+    resume: pdf,doc,docx
+    avatar: jpg,jpeg,png,gif
+    company-logo: jpg,jpeg,png,svg

@@ -25,6 +25,12 @@ public class Resume {
     @Column(name = "file_path")
     String filePath;
 
+    @Column(name = "original_filename")
+    String originalFilename;
+
+    @Column(name = "file_size")
+    Long fileSize;
+
     @Column(name = "created_at")
     LocalDateTime createdAt;
 
