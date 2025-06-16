@@ -1,0 +1,217 @@
+{
+  "job_data_list": [
+    {
+      "job_id": "AI001",
+      "job_title": "AI Engineer",
+      "company": "AI Solutions",
+      "location": "Hà Nội",
+      "job_type": "Full-time",
+      "required_skills": ["Python", "Machine Learning", "Deep Learning", "TensorFlow", "PyTorch"],
+      "min_experience": 2,
+      "education_requirement": "Đại học",
+      "job_description": "Phát triển và triển khai các mô hình AI, tối ưu pipeline machine learning cho sản phẩm thực tế.",
+      "responsibilities": [
+        "Xây dựng, huấn luyện và triển khai mô hình AI",
+        "Phối hợp với team backend để tích hợp AI vào sản phẩm",
+        "Nghiên cứu các thuật toán mới về Deep Learning"
+      ],
+      "benefits": [
+        "Lương 25-40 triệu",
+        "Thưởng dự án AI",
+        "Laptop cấu hình cao",
+        "Đào tạo chuyên sâu AI"
+      ]
+    },
+    {
+      "job_id": "AI002",
+      "job_title": "Machine Learning Engineer",
+      "company": "DataTech",
+      "location": "Hồ Chí Minh",
+      "job_type": "Full-time",
+      "required_skills": ["Python", "Scikit-learn", "Data Science", "SQL", "ML Ops"],
+      "min_experience": 1,
+      "education_requirement": "Đại học",
+      "job_description": "Phát triển các giải pháp machine learning, xử lý dữ liệu lớn và tối ưu hóa mô hình.",
+      "responsibilities": [
+        "Xây dựng pipeline xử lý dữ liệu",
+        "Huấn luyện và đánh giá mô hình ML",
+        "Triển khai mô hình lên production"
+      ],
+      "benefits": [
+        "Lương 18-30 triệu",
+        "Bảo hiểm sức khỏe",
+        "Tham gia hội thảo AI quốc tế"
+      ]
+    },
+    {
+      "job_id": "AI003",
+      "job_title": "Python Data Scientist",
+      "company": "FinAI",
+      "location": "Đà Nẵng",
+      "job_type": "Full-time",
+      "required_skills": ["Python", "Pandas", "Numpy", "Data Visualization", "Statistics"],
+      "min_experience": 2,
+      "education_requirement": "Thạc sĩ",
+      "job_description": "Phân tích dữ liệu tài chính, xây dựng dashboard và báo cáo dữ liệu cho khách hàng doanh nghiệp.",
+      "responsibilities": [
+        "Phân tích dữ liệu lớn",
+        "Xây dựng dashboard bằng Python",
+        "Tư vấn giải pháp dữ liệu cho khách hàng"
+      ],
+      "benefits": [
+        "Lương 22-35 triệu",
+        "Thưởng theo dự án",
+        "Đào tạo chuyên sâu Data Science"
+      ]
+    },
+    // Frontend jobs
+    {
+      "job_id": "FE001",
+      "job_title": "Frontend Developer (ReactJS)",
+      "company": "WebX Studio",
+      "location": "Hà Nội",
+      "job_type": "Full-time",
+      "required_skills": ["ReactJS", "JavaScript", "HTML", "CSS", "Redux"],
+      "min_experience": 1,
+      "education_requirement": "Cao đẳng",
+      "job_description": "Phát triển giao diện web hiện đại với ReactJS, tối ưu trải nghiệm người dùng.",
+      "responsibilities": [
+        "Xây dựng UI bằng ReactJS",
+        "Tối ưu performance web app",
+        "Làm việc với team thiết kế UI/UX"
+      ],
+      "benefits": [
+        "Lương 15-25 triệu",
+        "Làm việc hybrid",
+        "Teambuilding hàng quý"
+      ]
+    },
+    {
+      "job_id": "FE002",
+      "job_title": "Frontend Engineer (VueJS)",
+      "company": "CreativeSoft",
+      "location": "Hồ Chí Minh",
+      "job_type": "Full-time",
+      "required_skills": ["VueJS", "JavaScript", "HTML", "CSS", "REST API"],
+      "min_experience": 1,
+      "education_requirement": "Đại học",
+      "job_description": "Tham gia phát triển SPA với VueJS, tích hợp REST API và tối ưu SEO.",
+      "responsibilities": [
+        "Phát triển SPA với VueJS",
+        "Tích hợp REST API",
+        "Tối ưu SEO cho website"
+      ],
+      "benefits": [
+        "Lương 16-28 triệu",
+        "Bảo hiểm full",
+        "Đào tạo VueJS nâng cao"
+      ]
+    },
+    {
+      "job_id": "FE003",
+      "job_title": "Frontend Developer (Angular)",
+      "company": "Enterprise Apps",
+      "location": "Đà Nẵng",
+      "job_type": "Full-time",
+      "required_skills": ["Angular", "TypeScript", "HTML", "CSS", "RxJS"],
+      "min_experience": 2,
+      "education_requirement": "Đại học",
+      "job_description": "Phát triển ứng dụng web doanh nghiệp với Angular, tối ưu codebase và maintain hệ thống.",
+      "responsibilities": [
+        "Phát triển module Angular",
+        "Tối ưu codebase",
+        "Maintain hệ thống frontend"
+      ],
+      "benefits": [
+        "Lương 18-30 triệu",
+        "Thưởng dự án",
+        "Laptop mới"
+      ]
+    },
+    // IT jobs khác
+    {
+      "job_id": "IT001",
+      "job_title": "DevOps Engineer",
+      "company": "CloudTech Solutions",
+      "location": "Hà Nội",
+      "job_type": "Full-time",
+      "required_skills": ["Docker", "Kubernetes", "AWS", "Jenkins", "Linux"],
+      "min_experience": 2,
+      "education_requirement": "Đại học",
+      "job_description": "Quản lý infrastructure và CI/CD pipelines, làm việc với container orchestration và cloud platforms.",
+      "responsibilities": [
+        "Setup và maintain CI/CD pipelines",
+        "Container orchestration với Kubernetes",
+        "Monitor system performance và reliability"
+      ],
+      "benefits": [
+        "Lương 20-35 triệu",
+        "Certification support",
+        "Conference attendance"
+      ]
+    },
+    {
+      "job_id": "IT002",
+      "job_title": "QA Automation Engineer",
+      "company": "TestPro",
+      "location": "Hồ Chí Minh",
+      "job_type": "Full-time",
+      "required_skills": ["Selenium", "Python", "Automation Testing", "CI/CD", "API Testing"],
+      "min_experience": 1,
+      "education_requirement": "Cao đẳng",
+      "job_description": "Thiết kế và thực thi test automation cho web/app, tích hợp kiểm thử vào CI/CD pipeline.",
+      "responsibilities": [
+        "Viết test script với Selenium",
+        "Tích hợp kiểm thử vào CI/CD",
+        "Phối hợp với team phát triển"
+      ],
+      "benefits": [
+        "Lương 14-22 triệu",
+        "Thưởng hiệu suất",
+        "Đào tạo ISTQB"
+      ]
+    },
+    {
+      "job_id": "IT003",
+      "job_title": "IT Support Specialist",
+      "company": "OfficeCare",
+      "location": "Hà Nội",
+      "job_type": "Full-time",
+      "required_skills": ["Windows", "Network", "Helpdesk", "Troubleshooting", "Customer Service"],
+      "min_experience": 0,
+      "education_requirement": "Trung cấp",
+      "job_description": "Hỗ trợ kỹ thuật cho nhân viên văn phòng, xử lý sự cố máy tính, mạng và phần mềm.",
+      "responsibilities": [
+        "Hỗ trợ người dùng cuối",
+        "Xử lý sự cố máy tính, mạng",
+        "Cài đặt phần mềm, thiết bị"
+      ],
+      "benefits": [
+        "Lương 8-12 triệu",
+        "Môi trường thân thiện",
+        "Đào tạo kỹ năng IT"
+      ]
+    },
+    {
+      "job_id": 12345,
+      "job_title": "Backend Developer (Int)",
+      "company": "IntTech",
+      "location": "Hà Nội",
+      "job_type": "Full-time",
+      "required_skills": ["Python", "FastAPI", "SQL", "Docker"],
+      "min_experience": 1,
+      "education_requirement": "Đại học",
+      "job_description": "Phát triển backend API với Python, tối ưu hệ thống và làm việc với team AI.",
+      "responsibilities": [
+        "Xây dựng API với FastAPI",
+        "Tối ưu hóa truy vấn SQL",
+        "Triển khai ứng dụng với Docker"
+      ],
+      "benefits": [
+        "Lương 15-22 triệu",
+        "Laptop mới",
+        "Đào tạo nâng cao Python"
+      ]
+    }
+  ]
+}
