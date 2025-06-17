@@ -91,16 +91,16 @@ public class ApplicationServiceImpl implements ApplicationService {
         return applicationMapper.toResponse(savedApplication);
     }
 
-    @Override
-    @Transactional
-    @PreAuthorize("hasRole('USER')")
-    public ApplicationResponse applyForJobWithResume(Integer jobId, Integer resumeId) {
-        ApplicationRequest request = ApplicationRequest.builder()
-                .jobId(jobId)
-                .resumeId(resumeId)
-                .build();
-        return applyForJob(request);
-    }
+//    @Override
+//    @Transactional
+//    @PreAuthorize("hasRole('USER')")
+//    public ApplicationResponse applyForJobWithResume(Integer jobId, Integer resumeId) {
+//        ApplicationRequest request = ApplicationRequest.builder()
+//                .jobId(jobId)
+//                .resumeId(resumeId)
+//                .build();
+//        return applyForJob(request);
+//    }
 
     @Override
     @Transactional
@@ -202,9 +202,25 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public PageResponse<ApplicationResponse> getAllApplicationsForAdmin(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<Application> pageData = applicationRepository.findAll(pageable);
+
+        return PageResponse.<ApplicationResponse>builder()
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .Data(pageData.getContent().stream()
+                        .map(applicationMapper::toResponseForEmployer)
+                        .toList())
+                .build();
+    }
+
+    @Override
     @Transactional
     @PreAuthorize("hasRole('EMPLOYER')")
-    public void updateApplicationStatus(Integer applicationId, ApplicationStatusUpdateRequest request) {
+    public ApplicationResponse updateApplicationStatus(Integer applicationId, ApplicationStatusUpdateRequest request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -231,7 +247,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         application.setStatus(newStatus);
 
-        applicationRepository.save(application);
+        return applicationMapper.toResponse(applicationRepository.save(application));
 
         // Send notification to applicant
     }
@@ -282,9 +298,29 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public PageResponse<ApplicationResponse> searchApplications(String keyword, int page, int size) {
+    public PageResponse<ApplicationResponse> searchApplicationsAdmin(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        Page<Application> pageData = applicationRepository.searchApplications(keyword, pageable);
+        Page<Application> pageData = applicationRepository.searchApplicationsAdmin(keyword, pageable);
+
+        return PageResponse.<ApplicationResponse>builder()
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .Data(pageData.getContent().stream()
+                        .map(applicationMapper::toResponse)
+                        .toList())
+                .build();
+    }
+
+    @Override
+    @PreAuthorize("hasRole('EMPLOYER')")
+    public PageResponse<ApplicationResponse> searchApplicationsEmployer(String keyword, int page, int size) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<Application> pageData = applicationRepository.searchApplicationsEmployer(user.getId(), keyword, pageable);
 
         return PageResponse.<ApplicationResponse>builder()
                 .pageSize(pageData.getSize())

@@ -24,5 +24,14 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
             "LOWER(a.user.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(a.jobPost.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(a.jobPost.company.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    Page<Application> searchApplications(@Param("keyword") String keyword, Pageable pageable);
+    Page<Application> searchApplicationsAdmin(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT a FROM Application a WHERE " +
+            "a.employer.id= :employerId AND " +
+            "LOWER(a.user.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(a.user.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(a.jobPost.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(a.jobPost.company.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Application> searchApplicationsEmployer(@Param("employerId") String employerId
+            ,@Param("keyword") String keyword, Pageable pageable);
 }
