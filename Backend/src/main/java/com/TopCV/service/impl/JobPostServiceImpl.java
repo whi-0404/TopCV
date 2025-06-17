@@ -46,6 +46,21 @@ public class JobPostServiceImpl implements JobPostService {
     JobPostMapper jobPostMapper;
 
     @Override
+    public PageResponse<JobPostDashboardResponse> getDashboardJobPost(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<JobPost> pageData = jobPostRepository.findByStatusAndCompanyActiveTrue(JobPostStatus.ACTIVE, pageable);
+
+        return PageResponse.<JobPostDashboardResponse>builder()
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .Data(pageData.getContent().stream()
+                        .map(jobPostMapper::toJobPostDashboard)
+                        .toList())
+                .build();
+    }
+
+    @Override
     @Transactional
     @PreAuthorize("hasRole('EMPLOYER')")
     public JobPostResponse createJobPost(JobPostCreationRequest request) {

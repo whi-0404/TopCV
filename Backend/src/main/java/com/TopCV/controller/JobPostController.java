@@ -75,6 +75,15 @@ public class JobPostController {
                 .build();
     }
 
+    @GetMapping("/dashboard")
+    public ApiResponse<PageResponse<JobPostDashboardResponse>> getDashboardJobPost(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size){
+        return ApiResponse.<PageResponse<JobPostDashboardResponse>>builder()
+                .result(jobPostService.getDashboardJobPost(page, size))
+                .build();
+    }
+
     @GetMapping("/company/{companyId}")
     public ApiResponse<PageResponse<JobPostDashboardResponse>> getJobPostsByCompany(
             @PathVariable Integer companyId,

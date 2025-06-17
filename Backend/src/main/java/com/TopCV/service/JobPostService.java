@@ -24,4 +24,5 @@ public interface JobPostService {
     void favoriteJob(Integer jobId);
     void unFavoriteJob(Integer jobId);
     boolean isFavoriteJob(Integer jobId);
+    PageResponse<JobPostDashboardResponse> getDashboardJobPost(int page, int size);
 }

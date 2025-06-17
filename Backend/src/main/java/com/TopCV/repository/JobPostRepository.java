@@ -13,4 +13,6 @@ public interface JobPostRepository extends JpaRepository<JobPost, Integer>, JpaS
     Page<JobPost> findByCompanyId(Integer companyId, Pageable pageable);
 
     Page<JobPost> findByCompanyIdAndStatus(Integer companyId, JobPostStatus status, Pageable pageable);
+
+    Page<JobPost> findByStatusAndCompanyActiveTrue(JobPostStatus status, Pageable pageable);
 }
