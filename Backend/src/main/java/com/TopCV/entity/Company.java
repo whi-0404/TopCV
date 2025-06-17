@@ -44,9 +44,6 @@ public class Company {
     @JoinColumn(name = "user_id")
     User user;
 
-    @OneToMany(mappedBy = "company")
-    List<JobPost> jobPosts;
-
     @Column(name = "is_active")
     @Builder.Default
     Boolean active = false;
@@ -57,6 +54,16 @@ public class Company {
             joinColumns = @JoinColumn(name = "company_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     List<CompanyCategory> categories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    List<CompanyReview> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    List<JobPost> jobPosts;
+
+    @ManyToMany(mappedBy = "followCompanies", fetch = FetchType.LAZY)
+    List<User> followers = new ArrayList<>();
 
     @Column(name = "created_at")
     LocalDateTime createdAt;

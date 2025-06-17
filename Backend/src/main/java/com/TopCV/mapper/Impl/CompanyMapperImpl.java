@@ -57,7 +57,6 @@ public class CompanyMapperImpl implements CompanyMapper {
             Company.CompanyBuilder company = Company.builder();
             company.name(request.getName());
             company.description(request.getDescription());
-            company.logo(request.getLogo());
             company.website(request.getWebsite());
             company.employeeRange(request.getEmployeeRange());
             company.address(request.getAddress());
@@ -69,7 +68,6 @@ public class CompanyMapperImpl implements CompanyMapper {
         if (request != null) {
             company.setName(request.getName());
             company.setDescription(request.getDescription());
-            company.setLogo(request.getLogo());
             company.setWebsite(request.getWebsite());
             company.setEmployeeRange(request.getEmployeeRange());
 

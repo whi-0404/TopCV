@@ -13,7 +13,6 @@ import java.util.List;
 public class CompanyCreationRequest {
     private String name;
     private String description;
-    private String logo;
     private String website;
     private String employeeRange;
     private String address;

@@ -73,6 +73,12 @@ public class JobPost {
             inverseJoinColumns = @JoinColumn(name = "skill_id"))
     List<Skill> skills = new ArrayList<>();
 
+    @ManyToMany(mappedBy = "favoriteJobs", fetch = FetchType.LAZY)
+    List<User> favoritedByUsers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "jobPost", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    List<Application> applications = new ArrayList<>();
+
     @Column(name = "created_at")
     LocalDateTime createdAt;
 

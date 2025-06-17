@@ -5,10 +5,8 @@ import com.TopCV.dto.request.CompanySearchRequest;
 import com.TopCV.dto.request.JobPost.JobPostSearchRequest;
 import com.TopCV.dto.response.*;
 import com.TopCV.dto.response.JobPost.JobPostDashboardResponse;
-import com.TopCV.entity.Company;
-import com.TopCV.entity.CompanyCategory;
-import com.TopCV.entity.JobPost;
-import com.TopCV.entity.User;
+import com.TopCV.entity.*;
+import com.TopCV.enums.FileType;
 import com.TopCV.enums.JobPostStatus;
 import com.TopCV.exception.AppException;
 import com.TopCV.exception.ErrorCode;
@@ -22,6 +20,7 @@ import com.TopCV.repository.UserRepository;
 import com.TopCV.service.CompanyCategoryService;
 import com.TopCV.service.CompanyReviewService;
 import com.TopCV.service.CompanyService;
+import com.TopCV.service.FileService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -35,10 +34,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.google.common.io.Files.getFileExtension;
 
 @Service
 @RequiredArgsConstructor
@@ -50,18 +52,22 @@ public class CompanyServiceImpl implements CompanyService {
     CompanyMapper companyMapper;
     UserRepository userRepository;
     CompanyCategoryRepository categoryRepository;
-    CompanyCategoryMapper categoryMapper;
+    FileService fileService;
 
     @Override
     @Transactional
     @PreAuthorize("hasRole('EMPLOYER')")
-    public CompanyResponse createCompany(CompanyCreationRequest request) {
+    public CompanyResponse createCompany(CompanyCreationRequest request, MultipartFile file) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         if (companyRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.COMPANY_NAME_EXISTED);
+        }
+
+        if(companyRepository.existsByUserId(user.getId())){
+            throw new AppException(ErrorCode.COMPANY_EXISTED);
         }
 
         List<CompanyCategory> companyCategories = List.of();
@@ -73,9 +79,22 @@ public class CompanyServiceImpl implements CompanyService {
             }
         }
 
+        //logo
+        validateFile(file);
+        String filePath;
+
+        try {
+             filePath = fileService.uploadFile(file, FileType.COMPANY_LOGO.getDirectory());
+
+        } catch (Exception e) {
+            log.error("Failed to upload logo company for user {}: {}", user.getEmail(), e.getMessage(), e);
+            throw new AppException(ErrorCode.LOGO_COMPANY_UPLOAD_FAILED);
+        }
+
         Company company = companyMapper.toEntity(request);
         company.setUser(user);
         company.setCategories(companyCategories);
+        company.setLogo(filePath);
 
         return companyMapper.toResponse(companyRepository.save(company));
     }
@@ -108,10 +127,11 @@ public class CompanyServiceImpl implements CompanyService {
         return response;
     }
 
+
     @Override
     @Transactional
     @PreAuthorize("hasRole('EMPLOYER')")
-    public CompanyResponse updateCompany(Integer id, CompanyCreationRequest request) {
+    public CompanyResponse updateCompany(Integer id, CompanyCreationRequest request, MultipartFile file) {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_EXISTED));
 
@@ -123,7 +143,7 @@ public class CompanyServiceImpl implements CompanyService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
-        if (request.getName() != null &&
+        if (request!=null && request.getName() != null &&
                 !company.getName().equals(request.getName()) &&
                 companyRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.COMPANY_NAME_EXISTED);
@@ -131,7 +151,8 @@ public class CompanyServiceImpl implements CompanyService {
 
         companyMapper.updateEntity(company, request);
 
-        if (request.getCategoryIds() != null) {
+        // Update categories if provided
+        if (request!=null && request.getCategoryIds() != null) {
             if (request.getCategoryIds().isEmpty()) {
                 company.setCategories(List.of());
             } else {
@@ -144,11 +165,43 @@ public class CompanyServiceImpl implements CompanyService {
                 company.setCategories(companyCategories);
             }
         }
+
+        // Handle logo update if file is provided
+        if (file != null && !file.isEmpty()) {
+            // Validate the new file
+            validateFile(file);
+
+            // Store old logo path for deletion
+            String oldLogoPath = company.getLogo();
+
+            try {
+                // Upload new logo
+                String newFilePath = fileService.uploadFile(file, FileType.COMPANY_LOGO.getDirectory());
+                company.setLogo(newFilePath);
+
+                // Delete old logo file if it exists
+                if (oldLogoPath != null && !oldLogoPath.trim().isEmpty()) {
+                    try {
+                        fileService.deleteFile(oldLogoPath);
+                        log.info("Successfully deleted old logo: {}", oldLogoPath);
+                    } catch (Exception e) {
+                        log.warn("Failed to delete old logo file {}: {}", oldLogoPath, e.getMessage());
+                        // Don't throw exception here, as the main operation succeeded
+                    }
+                }
+
+            } catch (Exception e) {
+                log.error("Failed to upload new logo for company {}: {}", id, e.getMessage(), e);
+                throw new AppException(ErrorCode.LOGO_COMPANY_UPLOAD_FAILED);
+            }
+        }
+
         return companyMapper.toResponse(companyRepository.save(company));
     }
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteCompany(Integer id) {
         if (!companyRepository.existsById(id)) {
             throw new AppException(ErrorCode.COMPANY_NOT_EXISTED);
@@ -328,5 +381,46 @@ public class CompanyServiceImpl implements CompanyService {
         }
 
         return Sort.by(direction, sortField);
+    }
+
+    private void validateFile(MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new AppException(ErrorCode.LOGO_EMPTY);
+        }
+
+        if (file.getSize() > FileType.COMPANY_LOGO.getMaxFileSize()) {
+            throw new AppException(ErrorCode.LOGO_TOO_LARGE);
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.trim().isEmpty()) {
+            throw new AppException(ErrorCode.LOGO_INVALID_FORMAT);
+        }
+
+        if (!isValidLogoFormat(originalFilename)) {
+            log.error("Invalid logo format. File: {}, Allowed formats: {}",
+                    originalFilename, FileType.COMPANY_LOGO.getAllowedExtensions());
+            throw new AppException(ErrorCode.LOGO_INVALID_FORMAT);
+        }
+    }
+
+    private boolean isValidLogoFormat(String filename) {
+        if (filename == null || filename.trim().isEmpty()) {
+            return false;
+        }
+
+        if (!filename.contains(".")) {
+            return false;
+        }
+
+        String extension = getFileExtension(filename).toLowerCase();
+        boolean isValidExtension = FileType.COMPANY_LOGO.isExtensionAllowed(extension);
+
+        if (!isValidExtension) {
+            log.warn("Invalid file extension: {}. Allowed formats: {}",
+                    extension, FileType.COMPANY_LOGO.getAllowedExtensions());
+        }
+
+        return isValidExtension;
     }
 }

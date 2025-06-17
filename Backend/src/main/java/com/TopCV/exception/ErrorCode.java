@@ -46,6 +46,11 @@ public enum ErrorCode {
     COMPANY_NOT_ACTIVE(1603, "Company not active", HttpStatus.BAD_REQUEST),
     ALREADY_FOLLOWING_COMPANY(1604, "Already following this company", HttpStatus.BAD_REQUEST),
     NOT_FOLLOWING_COMPANY(1605, "Not following this company", HttpStatus.BAD_REQUEST),
+    LOGO_EMPTY(1606, "Empty logo", HttpStatus.BAD_REQUEST ),
+    LOGO_TOO_LARGE(1607, "Too large logo", HttpStatus.BAD_REQUEST ),
+    LOGO_INVALID_FORMAT(1608, "Invalid logo format", HttpStatus.BAD_REQUEST ),
+    LOGO_COMPANY_UPLOAD_FAILED(1609, "Company upload failed", HttpStatus.BAD_REQUEST ),
+    COMPANY_EXISTED(1610, "Company already exists", HttpStatus.BAD_REQUEST ),
 
     CATEGORY_NAME_EXISTED(1701, "Category name already exists", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_EXISTED(1702, "Category not exists", HttpStatus.BAD_REQUEST),

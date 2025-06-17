@@ -19,7 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -60,10 +62,14 @@ public class CompanyController {
                 .build();
     }
 
-    @PostMapping
-    public ApiResponse<CompanyResponse> createCompany(@RequestBody @Valid CompanyCreationRequest request) {
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<CompanyResponse> createCompany(
+            @RequestPart("company") @Valid CompanyCreationRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+
         return ApiResponse.<CompanyResponse>builder()
-                .result(companyService.createCompany(request))
+                .result(companyService.createCompany(request, file))
                 .build();
     }
 
@@ -82,10 +88,14 @@ public class CompanyController {
                 .build();
     }
 
-    @PutMapping("/{id}")
-    public ApiResponse<CompanyResponse> updateCompany(@PathVariable Integer id, @RequestBody @Valid CompanyCreationRequest request) {
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<CompanyResponse> updateCompany(
+            @PathVariable Integer id,
+            @RequestPart(value = "company", required = false) @Valid CompanyCreationRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+
         return ApiResponse.<CompanyResponse>builder()
-                .result(companyService.updateCompany(id, request))
+                .result(companyService.updateCompany(id, request, file))
                 .build();
     }
 

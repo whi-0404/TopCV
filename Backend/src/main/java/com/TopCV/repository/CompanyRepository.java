@@ -20,4 +20,6 @@ public interface CompanyRepository extends JpaRepository<Company, Integer>, JpaS
     Page<Company> findAllByActiveTrue(Pageable pageable);
 
     Optional<Company> findByUserId(String userId);
+
+    boolean existsByUserId(String userId);
 }
