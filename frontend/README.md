@@ -2,62 +2,7 @@
 
 Website tìm kiếm việc làm được xây dựng bằng React và Tailwind CSS.
 
-## Cấu trúc thư mục
 
-```
-job-search-website/
-├── public/
-│   ├── index.html
-│   └── assets/
-│       └── images/
-├── src/
-│   ├── components/
-│   │   ├── common/
-│   │   │   ├── Button.tsx
-│   │   │   ├── Input.tsx
-│   │   │   ├── Card.tsx
-│   │   │   └── Loading.tsx
-│   │   ├── layout/
-│   │   │   ├── Header.tsx
-│   │   │   ├── Footer.tsx
-│   │   │   └── Sidebar.tsx
-│   │   ├── job/
-│   │   │   ├── JobCard.tsx
-│   │   │   ├── JobList.tsx
-│   │   │   ├── JobSearch.tsx
-│   │   │   └── JobFilter.tsx
-│   │   └── auth/
-│   │       ├── LoginForm.tsx
-│   │       └── RegisterForm.tsx
-│   ├── pages/
-│   │   ├── Home.tsx
-│   │   ├── Jobs.tsx
-│   │   ├── JobDetail.tsx
-│   │   ├── Companies.tsx
-│   │   ├── Profile.tsx
-│   │   └── Auth/
-│   │       ├── Login.tsx
-│   │       └── Register.tsx
-│   ├── services/
-│   │   ├── api.ts
-│   │   └── auth.ts
-│   ├── hooks/
-│   │   └── useAuth.ts
-│   ├── context/
-│   │   └── AuthContext.tsx
-│   ├── types/
-│   │   ├── job.ts
-│   │   └── user.ts
-│   ├── utils/
-│   │   └── helpers.ts
-│   ├── styles/
-│   │   └── globals.css
-│   ├── App.tsx
-│   └── index.tsx
-├── package.json
-├── tsconfig.json
-├── tailwind.config.js
-└── postcss.config.js
 ```
 
 ## Cài đặt
