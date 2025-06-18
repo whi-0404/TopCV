@@ -130,4 +130,11 @@ public class UserController {
                 .result(userService.getFavoriteJobs(page, size))
                 .build();
     }
+
+    @GetMapping("/candidate/{applicationId}")
+    public ApiResponse<UserResponse> getCandidateByApplicationId(@PathVariable Long applicationId) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getCandidateByApplicationId(applicationId))
+                .build();
+    }
 }

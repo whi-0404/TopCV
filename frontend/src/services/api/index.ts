@@ -5,6 +5,8 @@ export { employerApi } from './employerApi';
 export { companyApi } from './companyApi';
 export { jobPostApi } from './jobPostApi';
 export { jobTypeApi, jobLevelApi, skillApi } from './jobTypeLevelApi';
+export { applicationApi, getStatusText, getStatusColor, canWithdrawApplication } from './applicationApi';
+export { resumeApi, formatFileSize, isValidResumeFile, getFileIcon } from './resumeApi';
 
 // Export types từ các API modules
 export type { LoginRequest, LoginResponse, ApiResponse } from './authApi';
@@ -46,3 +48,18 @@ export type {
   JobLevelRequest,
   SkillRequest
 } from './jobTypeLevelApi'; 
+export type {
+  ApplicationRequest,
+  ApplicationResponse,
+  ApplicationStatus,
+  ApplicationStatusUpdateRequest,
+  CVScreeningInfo,
+  JobPostDashboardResponse as ApplicationJobPostResponse,
+  UserDashboardResponse as ApplicationUserResponse,
+  PageResponse as ApplicationPageResponse
+} from './applicationApi';
+export type {
+  ResumeResponse,
+  FileUploadResponse
+} from './resumeApi'; 
+export * from './aiRecommendationApi'; 

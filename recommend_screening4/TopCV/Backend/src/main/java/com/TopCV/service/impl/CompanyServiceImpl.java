@@ -96,7 +96,7 @@ public class CompanyServiceImpl implements CompanyService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(companyMapper::toCompanyDashboard)
                         .toList())
                 .build();
@@ -264,7 +264,7 @@ public class CompanyServiceImpl implements CompanyService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(companyMapper::toCompanyDashboard)
                         .toList())
                 .build();
@@ -348,5 +348,26 @@ public class CompanyServiceImpl implements CompanyService {
 
             return predicates;
         };
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('EMPLOYER')")
+    public void updateCompanyLogo(Integer companyId, String logoPath) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_EXISTED));
+
+        // Verify that the current user owns this company
+        if (!company.getUser().getId().equals(currentUser.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // Update logo path
+        company.setLogo(logoPath);
+        companyRepository.save(company);
     }
 }

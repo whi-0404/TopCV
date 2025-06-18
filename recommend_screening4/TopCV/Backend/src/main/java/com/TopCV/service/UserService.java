@@ -45,4 +45,6 @@ public interface UserService {
     PageResponse<CompanyDashboardResponse> getFollowedCompanies(int page, int size);
 
     PageResponse<JobPostDashboardResponse> getFavoriteJobs(int page, int size);
+
+    UserResponse getCandidateByApplicationId(Long applicationId);
 }

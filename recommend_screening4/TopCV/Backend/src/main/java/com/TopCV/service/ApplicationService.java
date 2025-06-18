@@ -18,6 +18,8 @@ public interface ApplicationService {
 
     PageResponse<ApplicationResponse> getAllApplicationsForEmployer(int page, int size);
 
+    ApplicationResponse getApplicationById(Integer applicationId);
+
     void updateApplicationStatus(Integer applicationId, ApplicationStatusUpdateRequest request);
 
     void bulkUpdateApplicationStatus(ApplicationStatusUpdateRequest request);

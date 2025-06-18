@@ -27,8 +27,10 @@ public class SecurityConfig {
             "/ws/**",
             "/api/v1/auth/**",
             "/api/v1/users/register/**",
+            "/api/v1/users/verify-email/**", // Allow email verification without authentication
             "/api/v1/users/otp/**", 
             "/api/v1/employers/register/**",
+            "/api/v1/employers/verify-email/**", // Allow employer email verification
             "/api/v1/companies/search/**",
             "/api/v1/companies/{id}/**", // Public company details
             "/api/v1/job-types/**",
@@ -37,6 +39,10 @@ public class SecurityConfig {
             "/api/v1/job-levels/**",
             "/api/v1/skills/**",
             "/api/v1/ai/**",  // AI endpoints for testing
+            "/api/v1/resumes/debug-application/**", // Debug endpoints
+            "/api/v1/resumes/debug-all-applications", // Debug all applications
+            "/api/v1/resumes/test-debug/**", // Debug endpoints
+            "/uploads/**", // Static files (logos, resumes, etc.)
     };
 
     @Bean
@@ -55,6 +61,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/companies").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/companies/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/companies/**").authenticated()
+                        .requestMatchers("/api/v1/resumes/debug-employer-access/**").authenticated()
+                        .requestMatchers("/api/v1/resumes/test-auth").authenticated()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
@@ -77,7 +85,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

@@ -9,6 +9,7 @@ import com.TopCV.dto.response.JobPost.JobPostDashboardResponse;
 import com.TopCV.entity.Company;
 import com.TopCV.entity.JobPost;
 import com.TopCV.entity.User;
+import com.TopCV.entity.Application;
 import com.TopCV.enums.OtpType;
 import com.TopCV.enums.Role;
 import com.TopCV.mapper.CompanyMapper;
@@ -30,6 +31,7 @@ import com.TopCV.exception.AppException;
 import com.TopCV.exception.ErrorCode;
 import com.TopCV.mapper.UserMapper;
 import com.TopCV.repository.UserRepository;
+import com.TopCV.repository.ApplicationRepository;
 import com.TopCV.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +52,7 @@ public class UserServiceImpl implements UserService {
     UserRedisService userRedisService;
     CompanyMapper companyMapper;
     JobPostMapper jobPostMapper;
+    ApplicationRepository applicationRepository;
 
     @Transactional
     public RegistrationResponse createUser(UserCreationRequest request) {
@@ -134,13 +137,13 @@ public class UserServiceImpl implements UserService {
     public PageResponse<UserResponse> getAllUsers(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
 
-        Page<User> pageData = userRepository.findByActiveTrue(pageable);
+        Page<User> pageData = userRepository.findAll(pageable);
 
         return PageResponse.<UserResponse>builder()
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(userMapper::toResponse)
                         .toList())
                 .build();
@@ -156,7 +159,7 @@ public class UserServiceImpl implements UserService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(userMapper::toResponse)
                         .toList())
                 .build();
@@ -176,12 +179,25 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     public UserResponse verifyEmail(VerifyOtpRequest request) {
+        log.info("🔍 Starting email verification with keyRedisToken: {}", request.getKeyRedisToken());
+        log.info("🔍 Provided OTP: {}", request.getOtp());
 
         UserCreationRequest registrationData = userRedisService.getTemporaryRegistration(request.getKeyRedisToken());
+        
+        if (registrationData == null) {
+            log.error("❌ No registration data found for token: {}", request.getKeyRedisToken());
+            throw new AppException(ErrorCode.INVALID_OTP);
+        }
+        
+        log.info("🔍 Found registration data for email: {}", registrationData.getEmail());
+        log.info("🔍 Attempting to verify OTP for email: {}", registrationData.getEmail());
 
         boolean isOtpValid = otpService.verifyOtp(registrationData.getEmail(), request.getOtp());
+        
+        log.info("🔍 OTP verification result: {}", isOtpValid);
 
         if (!isOtpValid) {
+            log.error("❌ OTP verification failed for email: {} with OTP: {}", registrationData.getEmail(), request.getOtp());
             throw new AppException(ErrorCode.INVALID_OTP);
         }
 
@@ -250,7 +266,7 @@ public class UserServiceImpl implements UserService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(companyMapper::toCompanyDashboard)
                         .toList())
                 .build();
@@ -269,9 +285,32 @@ public class UserServiceImpl implements UserService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(jobPostMapper::toJobPostDashboard)
                         .toList())
                 .build();
+    }
+
+    // New method for employers to get candidate info through application
+    public UserResponse getCandidateByApplicationId(Long applicationId) {
+        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        
+        // Only employers can access this
+        if (!currentUser.getRole().equals(Role.EMPLOYER)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        
+        // Find application and verify it belongs to employer's job
+        Application application = applicationRepository.findById(applicationId.intValue())
+                .orElseThrow(() -> new AppException(ErrorCode.APPLICATION_NOT_EXISTED));
+        
+        // Check if the job post belongs to the current employer
+        if (!application.getJobPost().getCompany().getUser().getId().equals(currentUser.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        
+        return userMapper.toResponse(application.getUser());
     }
 }

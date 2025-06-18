@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   HomeIcon,
-  UserIcon,
   BriefcaseIcon,
   HeartIcon,
   UserCircleIcon,
@@ -11,27 +10,39 @@ import {
   BellIcon,
   EyeIcon,
   KeyIcon,
-  CreditCardIcon,
   GlobeAltIcon,
   ShieldCheckIcon,
   DevicePhoneMobileIcon,
-  EnvelopeIcon,
   CheckIcon
 } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { 
+  userApi,
+  type UserResponse,
+  type ChangePasswordRequest
+} from '../../services/api';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  
+  // API Data States
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [userInfo, setUserInfo] = useState<UserResponse | null>(null);
+  
+  // Password Change States
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
 
-  const handleLogout = () => {
-    // Xóa token/session từ localStorage hoặc sessionStorage
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userInfo');
-    sessionStorage.clear();
-    
-    // Chuyển hướng về trang chủ
-    navigate('/');
-  };
+  // Settings States
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
@@ -49,7 +60,6 @@ const SettingsPage: React.FC = () => {
 
   const sidebarItems = [
     { icon: HomeIcon, label: 'Tổng quan', active: false, href: '/user/dashboard' },
-    { icon: UserIcon, label: 'Tin nhắn', badge: '1', active: false, href: '/user/messages' },
     { icon: BriefcaseIcon, label: 'Công việc đã ứng tuyển', href: '/user/applications' },
     { icon: HeartIcon, label: 'Công việc yêu thích', href: '/user/favorites' },
     { icon: UserCircleIcon, label: 'Trang cá nhân', href: '/user/profile' },
@@ -57,12 +67,106 @@ const SettingsPage: React.FC = () => {
     { icon: QuestionMarkCircleIcon, label: 'Trợ giúp', href: '/user/help' }
   ];
 
+  useEffect(() => {
+    if (!user || user.role !== 'USER') {
+      navigate('/auth/login');
+      return;
+    }
+    
+    fetchUserInfo();
+  }, [user, navigate]);
+
+  const fetchUserInfo = async () => {
+    setLoading(true);
+    try {
+      const response = await userApi.getMyInfo();
+      if (response.code === 1000 && response.result) {
+        setUserInfo(response.result);
+      }
+    } catch (err) {
+      console.error('Error fetching user info:', err);
+      setError('Không thể tải thông tin người dùng');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/auth/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Reset states
+    setPasswordError('');
+    setPasswordSuccess(false);
+    
+    // Validation
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setPasswordError('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+    
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError('Mật khẩu mới và xác nhận không khớp');
+      return;
+    }
+    
+    if (passwordForm.newPassword.length < 8) {
+      setPasswordError('Mật khẩu phải có ít nhất 8 ký tự');
+      return;
+    }
+    
+    setPasswordLoading(true);
+    
+    try {
+      const changePasswordData: ChangePasswordRequest = {
+        oldPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword
+      };
+      
+      const response = await userApi.changePassword(changePasswordData);
+      
+      if (response.code === 1000) {
+        setPasswordSuccess(true);
+        setPasswordForm({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+        setTimeout(() => setPasswordSuccess(false), 3000);
+      }
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      if (error.response?.data?.message) {
+        setPasswordError(error.response.data.message);
+      } else {
+        setPasswordError('Không thể thay đổi mật khẩu. Vui lòng thử lại.');
+      }
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   const handleNotificationChange = (key: string, value: boolean) => {
     setNotifications(prev => ({ ...prev, [key]: value }));
+    // TODO: Call API to save notification preferences
   };
 
   const handlePrivacyChange = (key: string, value: string | boolean) => {
     setPrivacy(prev => ({ ...prev, [key]: value }));
+    // TODO: Call API to save privacy preferences
+  };
+
+  const handlePasswordFormChange = (field: string, value: string) => {
+    setPasswordForm(prev => ({ ...prev, [field]: value }));
+    setPasswordError(''); // Clear error when user starts typing
   };
 
   return (
@@ -94,58 +198,28 @@ const SettingsPage: React.FC = () => {
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="flex-1">{item.label}</span>
-                  {item.badge && (
-                    <span className="bg-emerald-600 text-white text-xs rounded-full px-2 py-0.5">
-                      {item.badge}
-                    </span>
-                  )}
                 </Link>
               </li>
             ))}
           </ul>
         </nav>
 
-        {/* Settings Section */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
-            CÀI ĐẶT
-          </div>
-          <ul className="space-y-2">
-            <li>
-              <Link
-                to="/user/settings"
-                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium bg-emerald-50 text-emerald-700 border-r-2 border-emerald-600 transition-colors"
-              >
-                <Cog6ToothIcon className="h-5 w-5" />
-                <span>Cài đặt</span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/user/help"
-                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-              >
-                <QuestionMarkCircleIcon className="h-5 w-5" />
-                <span>Trợ giúp</span>
-              </Link>
-            </li>
-          </ul>
-        </div>
+
 
         {/* User Profile - Sticky at bottom */}
         <div className="sticky bottom-0 bg-white p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3 mb-3">
             <img
-              src="https://via.placeholder.com/40x40?text=NH"
+              src={userInfo?.avt || `https://via.placeholder.com/40x40?text=${userInfo?.fullname?.charAt(0) || 'U'}`}
               alt="User Avatar"
               className="w-10 h-10 rounded-full"
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                Nguyễn Quang Huy
+                {userInfo?.fullname || 'Người dùng'}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                qhi@email.com
+                {userInfo?.email || 'email@example.com'}
               </p>
             </div>
           </div>
@@ -161,6 +235,20 @@ const SettingsPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-8">
+        {/* Loading State */}
+        {loading && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 text-blue-600 px-4 py-3 rounded-lg">
+            Đang tải dữ liệu...
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+            {error}
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -176,59 +264,81 @@ const SettingsPage: React.FC = () => {
         </div>
 
         <div className="max-w-4xl space-y-6">
-          {/* Account Settings */}
+          {/* Change Password */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center space-x-3 mb-6">
-              <UserIcon className="h-6 w-6 text-emerald-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Thông tin tài khoản</h2>
+              <KeyIcon className="h-6 w-6 text-emerald-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Đổi mật khẩu</h2>
             </div>
-            <div className="grid grid-cols-2 gap-6">
+
+            {/* Password Success Message */}
+            {passwordSuccess && (
+              <div className="mb-4 bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg flex items-center">
+                <CheckIcon className="h-5 w-5 mr-2" />
+                Mật khẩu đã được cập nhật thành công!
+              </div>
+            )}
+
+            {/* Password Error Message */}
+            {passwordError && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                {passwordError}
+              </div>
+            )}
+
+            <form onSubmit={handlePasswordChange} className="max-w-md space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Họ và tên
+                  Mật khẩu hiện tại
                 </label>
                 <input
-                  type="text"
-                  value="Nguyễn Quang Huy"
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => handlePasswordFormChange('currentPassword', e.target.value)}
+                  placeholder="Nhập mật khẩu hiện tại"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  disabled={passwordLoading}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
+                  Mật khẩu mới
                 </label>
                 <input
-                  type="email"
-                  value="qhi@email.com"
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => handlePasswordFormChange('newPassword', e.target.value)}
+                  placeholder="Nhập mật khẩu mới"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  disabled={passwordLoading}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Số điện thoại
+                  Xác nhận mật khẩu mới
                 </label>
                 <input
-                  type="tel"
-                  value="+84 123 456 789"
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => handlePasswordFormChange('confirmPassword', e.target.value)}
+                  placeholder="Nhập lại mật khẩu mới"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  disabled={passwordLoading}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Địa chỉ
-                </label>
-                <input
-                  type="text"
-                  value="09, Thành phố Thủ Đức"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                />
-              </div>
             </div>
             <div className="mt-6 flex justify-end">
-              <button className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
-                Lưu thay đổi
+                <button 
+                  type="submit"
+                  disabled={passwordLoading}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {passwordLoading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
               </button>
             </div>
+            </form>
           </div>
 
           {/* Security */}

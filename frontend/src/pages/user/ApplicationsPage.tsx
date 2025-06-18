@@ -1,107 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   HomeIcon,
   UserIcon,
   BriefcaseIcon,
-  MagnifyingGlassIcon,
   HeartIcon,
   UserCircleIcon,
   Cog6ToothIcon,
   QuestionMarkCircleIcon,
   ArrowRightOnRectangleIcon,
-  FunnelIcon,
-  MagnifyingGlassIcon as SearchIcon,
-  EllipsisHorizontalIcon,
-  CalendarDaysIcon
+  MagnifyingGlassIcon,
+  BuildingOfficeIcon,
+  MapPinIcon,
+  CurrencyDollarIcon,
+  CalendarIcon,
+  EyeIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
-import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { 
+  applicationApi, 
+  type ApplicationResponse,
+  type ApplicationPageResponse,
+  getStatusText,
+  getStatusColor,
+  canWithdrawApplication
+} from '../../services/api';
 
 const ApplicationsPage: React.FC = () => {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [applications, setApplications] = useState<ApplicationResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
+  const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
 
-  const handleLogout = () => {
-    // Xóa token/session từ localStorage hoặc sessionStorage
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userInfo');
-    sessionStorage.clear();
-    
-    // Chuyển hướng về trang chủ
-    navigate('/');
-  };
-  const [activeTab, setActiveTab] = useState('all');
-  const [dateRange, setDateRange] = useState('19/5 - 25/5');
-
-  // Mock data
-  const applications = [
-    {
-      id: '1',
-      company: 'Nomad',
-      companyLogo: 'https://via.placeholder.com/40x40?text=N',
-      position: 'Social Media Assistant',
-      location: 'Paris, France',
-      appliedDate: '24/06/2021',
-      status: 'reviewing',
-      statusText: 'Đang xem xét',
-      statusColor: 'bg-yellow-100 text-yellow-800'
-    },
-    {
-      id: '2',
-      company: 'Udacity',
-      companyLogo: 'https://via.placeholder.com/40x40?text=U',
-      position: 'Social Media Assistant',
-      location: 'New York, USA',
-      appliedDate: '20/06/2021',
-      status: 'shortlisted',
-      statusText: 'Đã vào vòng trong',
-      statusColor: 'bg-green-100 text-green-800'
-    },
-    {
-      id: '3',
-      company: 'Packer',
-      companyLogo: 'https://via.placeholder.com/40x40?text=P',
-      position: 'Social Media Assistant',
-      location: 'Madrid, Spain',
-      appliedDate: '18/06/2021',
-      status: 'interview',
-      statusText: 'Lời mời làm việc',
-      statusColor: 'bg-blue-100 text-blue-800'
-    },
-    {
-      id: '4',
-      company: 'Divvy',
-      companyLogo: 'https://via.placeholder.com/40x40?text=D',
-      position: 'Social Media Assistant',
-      location: 'Berlin, Germany',
-      appliedDate: '14/06/2021',
-      status: 'interview',
-      statusText: 'Đang phỏng vấn',
-      statusColor: 'bg-orange-100 text-orange-800'
-    },
-    {
-      id: '5',
-      company: 'DigitalOcean',
-      companyLogo: 'https://via.placeholder.com/40x40?text=DO',
-      position: 'Social Media Assistant',
-      location: 'London, UK',
-      appliedDate: '10/06/2021',
-      status: 'rejected',
-      statusText: 'Không phù hợp',
-      statusColor: 'bg-red-100 text-red-800'
-    }
-  ];
-
-  const tabs = [
-    { id: 'all', label: 'Tất cả', count: 45 },
-    { id: 'reviewing', label: 'Đang xem xét', count: 34 },
-    { id: 'interview', label: 'Đang phỏng vấn', count: 18 },
-    { id: 'shortlisted', label: 'Đánh giá', count: 5 },
-    { id: 'invite', label: 'Lời mời làm việc', count: 2 },
-    { id: 'rejected', label: 'Đã tuyển', count: 1 }
-  ];
+  const pageSize = 10;
 
   const sidebarItems = [
     { icon: HomeIcon, label: 'Tổng quan', active: false, href: '/user/dashboard' },
-    { icon: UserIcon, label: 'Tin nhắn', badge: '1', active: false, href: '/user/messages' },
     { icon: BriefcaseIcon, label: 'Công việc đã ứng tuyển', active: true, href: '/user/applications' },
     { icon: HeartIcon, label: 'Công việc yêu thích', href: '/user/favorites' },
     { icon: UserCircleIcon, label: 'Trang cá nhân', href: '/user/profile' },
@@ -109,9 +51,107 @@ const ApplicationsPage: React.FC = () => {
     { icon: QuestionMarkCircleIcon, label: 'Trợ giúp', href: '/user/help' }
   ];
 
-  const filteredApplications = activeTab === 'all' 
-    ? applications 
-    : applications.filter(app => app.status === activeTab);
+  useEffect(() => {
+    fetchApplications();
+  }, [currentPage, searchKeyword, statusFilter]);
+
+  const fetchApplications = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      let response;
+      
+      if (searchKeyword.trim()) {
+        // Search applications
+        response = await applicationApi.searchApplications(searchKeyword, currentPage, pageSize);
+      } else {
+        // Get all my applications
+        response = await applicationApi.getMyApplications(currentPage, pageSize);
+      }
+      
+      console.log('Applications API Response:', response);
+      
+      // Safely extract data from response
+      const responseData = response?.result?.data || [];
+      
+      // Filter by status if specified
+      let filteredApplications = responseData;
+      if (statusFilter !== 'all') {
+        filteredApplications = responseData.filter((app: ApplicationResponse) => app.status === statusFilter);
+      }
+      
+      setApplications(filteredApplications);
+      setTotalPages(response?.result?.totalPages || 1);
+      setTotalElements(response?.result?.totalElements || 0);
+    } catch (error: any) {
+      console.error('Error fetching applications:', error);
+      setError('Không thể tải danh sách đơn ứng tuyển');
+      setApplications([]); // Reset to empty array on error
+      setTotalPages(1);
+      setTotalElements(0);
+    }
+    
+    setLoading(false);
+  };
+
+  const handleWithdrawApplication = async (applicationId: number) => {
+    if (!window.confirm('Bạn có chắc chắn muốn rút đơn ứng tuyển này?')) return;
+    
+    setWithdrawingId(applicationId);
+    
+    try {
+      await applicationApi.withdrawApplication(applicationId);
+      
+      // Refresh list
+      await fetchApplications();
+      
+      alert('Đã rút đơn ứng tuyển và xóa khỏi hệ thống thành công');
+    } catch (error: any) {
+      console.error('Error withdrawing application:', error);
+      alert('Không thể rút đơn ứng tuyển. Vui lòng thử lại.');
+    }
+    
+    setWithdrawingId(null);
+  };
+
+  const handleSearch = () => {
+    setCurrentPage(1);
+    fetchApplications();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const formatSalary = (salary?: string): string => {
+    if (!salary || salary.trim() === '') return 'Thỏa thuận';
+    return salary;
+  };
+
+  if (!user || user.role !== 'USER') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Không có quyền truy cập</h1>
+          <p className="text-gray-600">Bạn không có quyền truy cập trang này.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -142,58 +182,28 @@ const ApplicationsPage: React.FC = () => {
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="flex-1">{item.label}</span>
-                  {item.badge && (
-                    <span className="bg-emerald-600 text-white text-xs rounded-full px-2 py-0.5">
-                      {item.badge}
-                    </span>
-                  )}
                 </Link>
               </li>
             ))}
           </ul>
         </nav>
 
-        {/* Settings Section */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
-            CÀI ĐẶT
-          </div>
-          <ul className="space-y-2">
-            <li>
-              <Link
-                to="/user/settings"
-                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-              >
-                <Cog6ToothIcon className="h-5 w-5" />
-                <span>Cài đặt</span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/help"
-                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-              >
-                <QuestionMarkCircleIcon className="h-5 w-5" />
-                <span>Trợ giúp</span>
-              </Link>
-            </li>
-          </ul>
-        </div>
-
                  {/* User Profile - Sticky at bottom */}
          <div className="sticky bottom-0 bg-white p-4 border-t border-gray-200">
            <div className="flex items-center space-x-3 mb-3">
-             <img
-               src="https://via.placeholder.com/40x40?text=NH"
-               alt="User Avatar"
-               className="w-10 h-10 rounded-full"
-             />
+            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+              {user?.avt ? (
+                <img src={user.avt} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
+              ) : (
+                <UserIcon className="h-6 w-6 text-emerald-600" />
+              )}
+            </div>
              <div className="flex-1 min-w-0">
                <p className="text-sm font-medium text-gray-900 truncate">
-                 Nguyễn Quang Huy
+                {user?.fullname}
                </p>
                <p className="text-xs text-gray-500 truncate">
-                 qhi@email.com
+                {user?.email}
                </p>
              </div>
            </div>
@@ -211,204 +221,229 @@ const ApplicationsPage: React.FC = () => {
       <div className="flex-1 p-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Công việc đã ứng tuyển</h1>
-              <div className="flex items-center space-x-2 mt-2">
-                <span className="text-gray-600">Gửi vùng phòng độ nhé, Huy!</span>
-              </div>
-              <p className="text-sm text-gray-500 mt-1">
-                Dưới đây là trang thái các đơn ứng tuyển từ 19 - 25/5/2025.
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg">
-                <CalendarDaysIcon className="h-5 w-5 text-gray-400" />
-                <span className="text-sm font-medium">{dateRange}</span>
-              </div>
-                             <Link
-                 to="/"
-                 className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-               >
-                 Quay lại trang chủ
-               </Link>
-            </div>
-          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Công việc đã ứng tuyển</h1>
+          <p className="text-gray-600">Theo dõi trạng thái các đơn ứng tuyển của bạn</p>
+        </div>
 
-          {/* Feature Notice */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start space-x-3">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <div className="w-4 h-4 bg-blue-600 rounded-full"></div>
-            </div>
+        {/* Search and Filters */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <h3 className="font-medium text-blue-900 mb-1">Tính năng mới</h3>
-              <p className="text-sm text-blue-700 mb-2">
-                Bạn có thể gửi yêu cầu theo dõi sau 7 ngày kể từ khi nộp hồ sơ, nếu trạng thái hồ sơ đang được xem xét.
-              </p>
-              <p className="text-sm text-blue-700">
-                Mỗi công việc chỉ được gửi 1 yêu cầu theo dõi.
-              </p>
+              <div className="relative">
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder="Tìm kiếm theo tên công việc, công ty..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                />
+              </div>
             </div>
-            <button className="text-blue-400 hover:text-blue-600">
-              <span className="sr-only">Đóng</span>
-              ×
+            <div className="flex gap-3">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+              >
+                <option value="all">Tất cả trạng thái</option>
+                <option value="PENDING">Chờ xét duyệt</option>
+                <option value="REVIEWING">Đang xem xét</option>
+                <option value="SHORTLISTED">Đã qua CV</option>
+                <option value="INTERVIEWED">Đã phỏng vấn</option>
+                <option value="HIRED">Được tuyển</option>
+                <option value="REJECTED">Không phù hợp</option>
+              </select>
+              <button
+                onClick={handleSearch}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+               >
+                Tìm kiếm
             </button>
+            </div>
           </div>
-        </div>
+            </div>
 
-        {/* Tabs */}
-        <div className="mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              {tabs.map((tab) => (
+        {/* Applications List */}
+        {loading ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mb-4"></div>
+              <p className="text-gray-600">Đang tải danh sách đơn ứng tuyển...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">{error}</p>
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'border-emerald-500 text-emerald-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                onClick={fetchApplications}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                 >
-                  {tab.label} ({tab.count})
+                Thử lại
                 </button>
-              ))}
-            </nav>
-          </div>
         </div>
-
-        {/* Search and Filter */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <h2 className="text-lg font-semibold text-gray-900">Lịch sử ứng tuyển</h2>
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Tìm kiếm"
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none w-64"
-              />
+        ) : !applications || applications.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="text-center">
+              <BriefcaseIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có đơn ứng tuyển nào</h3>
+              <p className="text-gray-600 mb-6">
+                {searchKeyword || statusFilter !== 'all' 
+                  ? 'Không tìm thấy đơn ứng tuyển phù hợp với tiêu chí tìm kiếm'
+                  : 'Bạn chưa ứng tuyển công việc nào. Hãy khám phá các cơ hội việc làm hấp dẫn!'
+                }
+              </p>
+              <Link
+                to="/jobs"
+                className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                Tìm việc làm
+              </Link>
             </div>
-            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-              <FunnelIcon className="h-4 w-4" />
-              <span>Lọc</span>
-            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {applications && applications.map((application) => (
+              <div key={application.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    {/* Job Info */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          {application.jobPost.logo ? (
+                            <img 
+                              src={`http://localhost:8080/TopCV/uploads/${application.jobPost.logo}`}
+                              alt={application.jobPost.companyName}
+                              className="w-10 h-10 object-cover rounded-lg"
+                              onError={(e) => {
+                                console.error('Application logo failed to load:', application.jobPost.logo);
+                                e.currentTarget.style.display = 'none';
+                                const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                                if (fallback) {
+                                  fallback.style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <BuildingOfficeIcon 
+                            className="h-6 w-6 text-gray-600" 
+                            style={{ display: application.jobPost.logo ? 'none' : 'flex' }}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                            {application.jobPost.title}
+                          </h3>
+                          <p className="text-emerald-600 font-medium mb-2">
+                            {application.jobPost.companyName}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                            <div className="flex items-center space-x-1">
+                              <MapPinIcon className="h-4 w-4" />
+                              <span>{application.jobPost.location}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <CurrencyDollarIcon className="h-4 w-4" />
+                              <span>{formatSalary(application.jobPost.salary)}</span>
+                            </div>
+                            {application.jobPost.deadline && (
+                              <div className="flex items-center space-x-1">
+                                <CalendarIcon className="h-4 w-4" />
+                                <span>Hạn: {formatDate(application.jobPost.deadline)}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end space-y-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(application.status)}`}>
+                          {getStatusText(application.status)}
+                        </span>
+                        <p className="text-xs text-gray-500">
+                          Ứng tuyển: {formatDate(application.createdAt)}
+                        </p>
           </div>
         </div>
 
-        {/* Applications Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  #
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tên công ty
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Vị trí
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ngày ứng tuyển
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Trạng thái
-                </th>
-                <th className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredApplications.map((application, index) => (
-                <tr key={application.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {index + 1}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <img
-                          className="h-10 w-10 rounded-lg"
-                          src={application.companyLogo}
-                          alt={application.company}
-                        />
+                    {/* Cover Letter Preview */}
+                    {application.coverLetter && 
+                     !application.coverLetter.includes("Applied via AI Screening System") && 
+                     !application.coverLetter.includes("AI Screening System") &&
+                     application.coverLetter.trim() !== "" && (
+                      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-700 line-clamp-2">
+                          <span className="font-medium">Thư xin việc:</span> {application.coverLetter}
+                        </p>
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {application.company}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {application.location}
-                        </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex justify-between items-center">
+                      <div className="flex space-x-3">
+                        <Link
+                          to={`/jobs/${application.jobPost.id}`}
+                          className="flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <EyeIcon className="h-4 w-4" />
+                          <span>Xem chi tiết</span>
+                        </Link>
+                        {canWithdrawApplication(application.status) && (
+                          <button
+                            onClick={() => handleWithdrawApplication(application.id)}
+                            disabled={withdrawingId === application.id}
+                            className="flex items-center space-x-2 px-3 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 hover:bg-red-50 transition-colors disabled:opacity-50"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                            <span>{withdrawingId === application.id ? 'Đang rút...' : 'Rút đơn'}</span>
+                          </button>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        #{application.id}
                       </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {application.position}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {application.appliedDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${application.statusColor}`}>
-                      {application.statusText}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <EllipsisHorizontalIcon className="h-5 w-5" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </div>
+              </div>
+            ))}
 
-        {/* Pagination */}
-        <div className="mt-6 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-700">Hiển thị</span>
-            <select className="border border-gray-300 rounded px-2 py-1 text-sm">
-              <option>10</option>
-              <option>25</option>
-              <option>50</option>
-            </select>
-            <span className="text-sm text-gray-700">kết quả</span>
-          </div>
-          <nav className="flex items-center space-x-2">
-            <button className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
-              ←
-            </button>
-            <button className="px-3 py-2 text-sm font-medium bg-emerald-600 text-white rounded">
-              1
-            </button>
-            <button className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
-              2
-            </button>
-            <button className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
-              3
-            </button>
-            <button className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
-              4
-            </button>
-            <button className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
-              5
-            </button>
-            <span className="px-2 text-gray-500">...</span>
-            <button className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
-              33
-            </button>
-            <button className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
-              →
-            </button>
-          </nav>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-700">
+                    Hiển thị <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> đến{' '}
+                    <span className="font-medium">{Math.min(currentPage * pageSize, totalElements)}</span> trong{' '}
+                    <span className="font-medium">{totalElements}</span> đơn ứng tuyển
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Trước
+                    </button>
+                    <span className="px-3 py-1 text-sm font-medium text-gray-700">
+                      Trang {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Sau
+                    </button>
+                  </div>
+                </div>
         </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

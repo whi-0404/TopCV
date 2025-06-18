@@ -18,7 +18,9 @@ import {
   AcademicCapIcon,
   TagIcon,
   ClockIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  ChatBubbleLeftRightIcon,
+  UsersIcon
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import { 
@@ -243,11 +245,10 @@ const CreateJobPage: React.FC = () => {
   };
 
   const sidebarItems = [
-    { icon: HomeIcon, label: 'Tổng quan', active: false, href: '/employer/dashboard' },
-    { icon: BriefcaseIcon, label: 'Tin nhắn', href: '/employer/messages' },
-    { icon: BuildingOfficeIcon, label: 'Hồ sơ công ty', href: '/employer/company' },
-    { icon: UserGroupIcon, label: 'Tất cả ứng viên', href: '/employer/candidates' },
+    { icon: HomeIcon, label: 'Tổng quan', href: '/employer/dashboard' },
     { icon: BriefcaseIcon, label: 'Danh sách công việc', active: true, href: '/employer/jobs' },
+    { icon: UsersIcon, label: 'Tất cả ứng viên', href: '/employer/candidates' },
+    { icon: BuildingOfficeIcon, label: 'Hồ sơ công ty', href: '/employer/company' },
     { icon: Cog6ToothIcon, label: 'Cài đặt', href: '/employer/settings' },
     { icon: QuestionMarkCircleIcon, label: 'Trợ giúp', href: '/employer/help' }
   ];
@@ -310,20 +311,20 @@ const CreateJobPage: React.FC = () => {
         {/* User Profile Section */}
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <span className="text-gray-600 font-medium text-sm">
-                {user?.fullname?.charAt(0).toUpperCase() || 'U'}
-              </span>
-            </div>
+            <img
+              src={user?.avt || `https://via.placeholder.com/32x32?text=${user?.fullname?.charAt(0) || 'E'}`}
+              alt="User Avatar"
+              className="w-8 h-8 rounded-full"
+            />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                {user?.fullname || 'User'}
+                {user?.fullname || 'Nhà tuyển dụng'}
               </p>
               <p className="text-xs text-gray-500 truncate">{user?.email}</p>
             </div>
             <button
               onClick={handleLogout}
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1 text-red-400 hover:text-red-600 transition-colors"
               title="Đăng xuất"
             >
               <ArrowRightOnRectangleIcon className="h-5 w-5" />

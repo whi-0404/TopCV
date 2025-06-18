@@ -7,8 +7,17 @@ import {
   ChevronDownIcon,
   MagnifyingGlassIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
+
+// Interface cho navigation items
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  special?: boolean;
+}
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -36,12 +45,30 @@ const Header: React.FC = () => {
     }
   };
 
-  const navigationItems = [
+  // Navigation items cho user chưa đăng nhập hoặc không phải USER
+  const defaultNavigationItems: NavigationItem[] = [
     { name: 'Việc làm IT', href: '/jobs' },
     { name: 'Công ty IT', href: '/companies' },
     { name: 'Blog IT', href: '/blogs' },
     { name: 'Liên hệ', href: '/contact' }
   ];
+
+  // Navigation items cho USER đã đăng nhập (thêm AI Gợi ý)
+  const userNavigationItems: NavigationItem[] = [
+    { name: 'Việc làm IT', href: '/jobs' },
+    { name: 'Công ty IT', href: '/companies' },
+    { 
+      name: 'AI Gợi ý việc làm', 
+      href: '/ai-recommendations',
+      icon: SparklesIcon,
+      special: true
+    },
+    { name: 'Blog IT', href: '/blogs' },
+    { name: 'Liên hệ', href: '/contact' }
+  ];
+
+  // Chọn navigation items dựa trên role của user
+  const navigationItems = user?.role === 'USER' ? userNavigationItems : defaultNavigationItems;
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
@@ -65,9 +92,19 @@ const Header: React.FC = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className="text-gray-700 hover:text-emerald-600 px-3 py-2 text-sm font-medium transition-colors"
+                className={`flex items-center px-3 py-2 text-sm font-medium transition-colors ${
+                  item.special 
+                    ? 'text-purple-600 hover:text-purple-700 bg-purple-50 rounded-lg border border-purple-200' 
+                    : 'text-gray-700 hover:text-emerald-600'
+                }`}
               >
+                {item.icon && <item.icon className="h-4 w-4 mr-1.5" />}
                 {item.name}
+                {item.special && (
+                  <span className="ml-1.5 px-1.5 py-0.5 text-xs bg-purple-600 text-white rounded-full">
+                    AI
+                  </span>
+                )}
               </Link>
             ))}
           </nav>
@@ -161,10 +198,20 @@ const Header: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className="text-gray-700 hover:text-emerald-600 px-3 py-2 text-sm font-medium"
+                  className={`flex items-center px-3 py-2 text-sm font-medium ${
+                    item.special 
+                      ? 'text-purple-600 hover:text-purple-700 bg-purple-50 rounded-lg border border-purple-200' 
+                      : 'text-gray-700 hover:text-emerald-600'
+                  }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
+                  {item.icon && <item.icon className="h-4 w-4 mr-2" />}
                   {item.name}
+                  {item.special && (
+                    <span className="ml-2 px-1.5 py-0.5 text-xs bg-purple-600 text-white rounded-full">
+                      AI
+                    </span>
+                  )}
                 </Link>
               ))}
             </nav>

@@ -40,7 +40,11 @@ export interface JobPostUpdateRequest {
 export interface JobPostResponse {
   id: number;
   title: string;
+  description?: string;
+  requirements?: string;
+  benefits?: string;
   location: string;
+  workingTime?: string;
   salary: string;
   experienceRequired: string;
   deadline: string;
@@ -68,15 +72,15 @@ export interface JobPostDashboardResponse {
   title: string;
   salary?: string | null;
   location: string;
-  deadline?: string | null;
-  status?: string;
+  deadline?: string | null; // LocalDate from backend will be serialized as string
+  status?: JobPostStatus;
   experienceLevel?: string;
   type: JobTypeResponse;
   level: JobLevelResponse;
   companyName: string;
   logo?: string | null;
   appliedCount: number;
-  createdAt?: string;
+  createdAt?: string; // LocalDateTime from backend will be serialized as string
 }
 
 export interface JobTypeResponse {
@@ -105,7 +109,6 @@ export interface JobPostSearchRequest {
   skillIds?: number[];
   companyId?: number;
   experienceLevel?: string;
-  salaryRange?: string;
   status?: string;
   sortBy?: string;
   sortDirection?: string;
@@ -122,8 +125,61 @@ export interface PageResponse<T> {
 export const jobPostApi = {
   // GET /api/v1/job-posts/search
   searchJobPosts: async (params: JobPostSearchRequest & { page?: number; size?: number }): Promise<ApiResponse<PageResponse<JobPostDashboardResponse>>> => {
-    const response = await apiClient.get('/job-posts/search', { params });
-    return response.data;
+    try {
+      // Check if we have complex filters that need URLSearchParams
+      const hasComplexFilters = params.jobTypeIds?.length || params.jobLevelIds?.length || params.skillIds?.length;
+      
+      // If we have complex filters, use URLSearchParams approach
+      if (hasComplexFilters) {
+        const searchParams = new URLSearchParams();
+        
+        // Add simple parameters
+        if (params.keyword) searchParams.append('keyword', params.keyword);
+        if (params.location) searchParams.append('location', params.location);
+        if (params.experienceLevel) searchParams.append('experienceLevel', params.experienceLevel);
+        if (params.status) searchParams.append('status', params.status);
+        if (params.companyId) searchParams.append('companyId', params.companyId.toString());
+        
+        // Always add sorting and pagination
+        searchParams.append('sortBy', params.sortBy || 'createdAt');
+        searchParams.append('sortDirection', params.sortDirection || 'desc');
+        searchParams.append('page', (params.page || 1).toString());
+        searchParams.append('size', (params.size || 10).toString());
+        
+        // Add array parameters - Spring Boot expects jobTypeIds=1&jobTypeIds=2 format
+        if (params.jobTypeIds && params.jobTypeIds.length > 0) {
+          params.jobTypeIds.forEach(id => searchParams.append('jobTypeIds', id.toString()));
+        }
+        if (params.jobLevelIds && params.jobLevelIds.length > 0) {
+          params.jobLevelIds.forEach(id => searchParams.append('jobLevelIds', id.toString()));
+        }
+        if (params.skillIds && params.skillIds.length > 0) {
+          params.skillIds.forEach(id => searchParams.append('skillIds', id.toString()));
+        }
+        
+        const url = `/job-posts/search?${searchParams.toString()}`;
+        const response = await apiClient.get(url);
+        return response.data;
+      } else {
+        // For simple requests, use params object approach
+        const response = await apiClient.get('/job-posts/search', {
+          params: {
+            keyword: params.keyword || undefined,
+            location: params.location || undefined,
+            status: params.status || undefined,
+            experienceLevel: params.experienceLevel || undefined,
+            companyId: params.companyId || undefined,
+            page: params.page || 1,
+            size: params.size || 10,
+            sortBy: params.sortBy || 'createdAt',
+            sortDirection: params.sortDirection || 'desc'
+          }
+        });
+        return response.data;
+      }
+    } catch (error) {
+      throw error;
+    }
   },
 
   // GET /api/v1/job-posts/trending

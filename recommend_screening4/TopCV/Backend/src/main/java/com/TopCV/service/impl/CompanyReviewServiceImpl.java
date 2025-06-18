@@ -85,7 +85,7 @@ public class CompanyReviewServiceImpl implements CompanyReviewService {
                 .pageSize(reviewPage.getSize())
                 .totalPages(reviewPage.getTotalPages())
                 .totalElements(reviewPage.getTotalElements())
-                .Data(reviewPage.getContent().stream()
+                .data(reviewPage.getContent().stream()
                         .map(reviewMapper::toResponse)
                         .toList())
                 .build();

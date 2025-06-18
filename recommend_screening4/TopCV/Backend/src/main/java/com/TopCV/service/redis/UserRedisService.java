@@ -79,7 +79,10 @@ public class UserRedisService {
 
     public String getOtp(String email) {
         String redisKey = OTP_KEY_PREFIX + email;
-        return (String) redisTemplate.opsForValue().get(redisKey);
+        log.info("🔍 Getting OTP for email: {} with key: {}", email, redisKey);
+        String otp = (String) redisTemplate.opsForValue().get(redisKey);
+        log.info("🔍 Retrieved OTP: '{}'", otp);
+        return otp;
     }
 
     public void deleteOtp(String email) {

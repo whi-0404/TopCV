@@ -27,6 +27,9 @@ public class ApplicationResponse {
 
     String coverLetter;
     
+    // Resume information for CV display
+    ResumeResponse resume;
+    
     // CV Screening Results - Thông tin cho nhà tuyển dụng
     CVScreeningInfo screeningResult;
     

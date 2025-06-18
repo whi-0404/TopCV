@@ -123,14 +123,16 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new AppException(ErrorCode.CANNOT_WITHDRAW_APPLICATION);
         }
 
-        // Update application status
-        application.setStatus(ApplicationStatus.WITHDRAWN);
-        applicationRepository.save(application);
-
-        // Decrease job post applied count
+        // Decrease job post applied count before deleting
         JobPost jobPost = application.getJobPost();
         jobPost.setAppliedCount(Math.max(0, jobPost.getAppliedCount() - 1));
         jobPostRepository.save(jobPost);
+
+        // Delete the application record completely
+        applicationRepository.delete(application);
+        
+        log.info("Application with ID {} has been withdrawn and deleted from database by user {}", 
+                applicationId, user.getEmail());
     }
 
     @Override
@@ -147,7 +149,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(applicationMapper::toResponse)
                         .toList())
                 .build();
@@ -175,7 +177,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(applicationMapper::toResponseForEmployer)
                         .toList())
                 .build();
@@ -195,7 +197,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(applicationMapper::toResponseForEmployer)
                         .toList())
                 .build();
@@ -225,9 +227,10 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new AppException(ErrorCode.INVALID_APPLICATION_STATUS);
         }
 
-        if (!isValidStatusTransition(application.getStatus(), newStatus)) {
-            throw new AppException(ErrorCode.INVALID_STATUS_TRANSITION);
-        }
+        // Allow free status transition - employer has full control
+        // if (!isValidStatusTransition(application.getStatus(), newStatus)) {
+        //     throw new AppException(ErrorCode.INVALID_STATUS_TRANSITION);
+        // }
 
         application.setStatus(newStatus);
 
@@ -268,11 +271,10 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new AppException(ErrorCode.INVALID_APPLICATION_STATUS);
         }
 
-        // Update all applications
+        // Update all applications - allow free status transition
         for (Application application : applications) {
-            if (isValidStatusTransition(application.getStatus(), newStatus)) {
+            // Allow any status transition - employer has full control
                 application.setStatus(newStatus);
-            }
         }
 
         applicationRepository.saveAll(applications);
@@ -290,23 +292,42 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
-                        .map(applicationMapper::toResponse)
+                .data(pageData.getContent().stream()
+                        .map(applicationMapper::toResponseForEmployer)
                         .toList())
                 .build();
     }
 
-    private boolean isValidStatusTransition(ApplicationStatus currentStatus, ApplicationStatus newStatus) {
-        return switch (currentStatus) {
-            case PENDING -> newStatus == ApplicationStatus.REVIEWING ||
-                    newStatus == ApplicationStatus.REJECTED;
-            case REVIEWING -> newStatus == ApplicationStatus.SHORTLISTED ||
-                    newStatus == ApplicationStatus.REJECTED;
-            case SHORTLISTED -> newStatus == ApplicationStatus.INTERVIEWED ||
-                    newStatus == ApplicationStatus.REJECTED;
-            case INTERVIEWED -> newStatus == ApplicationStatus.HIRED ||
-                    newStatus == ApplicationStatus.REJECTED;
-            case REJECTED, HIRED, WITHDRAWN -> false; // Final states
-        };
+    @Override
+    @PreAuthorize("hasRole('EMPLOYER')")
+    public ApplicationResponse getApplicationById(Integer applicationId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new AppException(ErrorCode.APPLICATION_NOT_EXISTED));
+
+        // Verify user is the employer for this application
+        if (!application.getEmployer().getId().equals(user.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        return applicationMapper.toResponseForEmployer(application);
     }
+
+    // DISABLED: Allow free status transition - employer has full control
+    // private boolean isValidStatusTransition(ApplicationStatus currentStatus, ApplicationStatus newStatus) {
+    //     return switch (currentStatus) {
+    //         case PENDING -> newStatus == ApplicationStatus.REVIEWING ||
+    //                 newStatus == ApplicationStatus.REJECTED;
+    //         case REVIEWING -> newStatus == ApplicationStatus.SHORTLISTED ||
+    //                 newStatus == ApplicationStatus.REJECTED;
+    //         case SHORTLISTED -> newStatus == ApplicationStatus.INTERVIEWED ||
+    //                 newStatus == ApplicationStatus.REJECTED;
+    //         case INTERVIEWED -> newStatus == ApplicationStatus.HIRED ||
+    //                 newStatus == ApplicationStatus.REJECTED;
+    //         case REJECTED, HIRED, WITHDRAWN -> false; // Final states
+    //     };
+    // }
 }

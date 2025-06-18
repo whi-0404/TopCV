@@ -17,7 +17,7 @@ const BlogsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const blogsPerPage = 6;
 
-  // Mock blog data
+  // Mock blog data với ảnh thực tế từ Unsplash
   const blogs = [
     {
       id: '1',
@@ -28,7 +28,7 @@ const BlogsPage: React.FC = () => {
       publishedAt: '2024-01-15',
       category: 'Programming',
       tags: ['Full Stack', 'Web Development', 'Career'],
-      imageUrl: 'https://via.placeholder.com/400x240?text=Full+Stack+Developer',
+      imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=600&q=80',
       views: 1250,
       readTime: '8 phút đọc'
     },
@@ -41,7 +41,7 @@ const BlogsPage: React.FC = () => {
       publishedAt: '2024-01-10',
       category: 'Frontend',
       tags: ['React', 'Vue.js', 'JavaScript'],
-      imageUrl: 'https://via.placeholder.com/400x240?text=React+vs+Vue',
+      imageUrl: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=600&q=80',
       views: 980,
       readTime: '12 phút đọc'
     },
@@ -54,7 +54,7 @@ const BlogsPage: React.FC = () => {
       publishedAt: '2024-01-08',
       category: 'AI & ML',
       tags: ['Artificial Intelligence', 'Machine Learning', 'Python'],
-      imageUrl: 'https://via.placeholder.com/400x240?text=AI+Machine+Learning',
+      imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=600&q=80',
       views: 1400,
       readTime: '10 phút đọc'
     },
@@ -67,7 +67,7 @@ const BlogsPage: React.FC = () => {
       publishedAt: '2024-01-05',
       category: 'Security',
       tags: ['Web Security', 'HTTPS', 'Authentication'],
-      imageUrl: 'https://via.placeholder.com/400x240?text=Web+Security',
+      imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=600&q=80',
       views: 875,
       readTime: '15 phút đọc'
     },
@@ -80,7 +80,7 @@ const BlogsPage: React.FC = () => {
       publishedAt: '2024-01-03',
       category: 'DevOps',
       tags: ['Docker', 'Kubernetes', 'DevOps'],
-      imageUrl: 'https://via.placeholder.com/400x240?text=Docker+Kubernetes',
+      imageUrl: 'https://images.unsplash.com/photo-1605745341112-85968b19335a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=600&q=80',
       views: 1120,
       readTime: '20 phút đọc'
     },
@@ -93,9 +93,35 @@ const BlogsPage: React.FC = () => {
       publishedAt: '2024-01-01',
       category: 'Cloud',
       tags: ['AWS', 'Azure', 'Google Cloud'],
-      imageUrl: 'https://via.placeholder.com/400x240?text=Cloud+Computing',
+      imageUrl: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=600&q=80',
       views: 750,
       readTime: '18 phút đọc'
+    },
+    {
+      id: '7',
+      title: 'Thiết kế UI/UX: Xu hướng 2024',
+      excerpt: 'Khám phá các xu hướng thiết kế UI/UX mới nhất và cách áp dụng chúng vào dự án thực tế.',
+      content: 'Thiết kế UI/UX đang phát triển với tốc độ chóng mặt...',
+      author: 'Ngô Thị G',
+      publishedAt: '2024-01-20',
+      category: 'Design',
+      tags: ['UI/UX', 'Design', 'Trends'],
+      imageUrl: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=600&q=80',
+      views: 892,
+      readTime: '7 phút đọc'
+    },
+    {
+      id: '8',
+      title: 'Mobile App Development: Native vs Cross-platform',
+      excerpt: 'So sánh ưu nhược điểm của phát triển ứng dụng mobile native và cross-platform.',
+      content: 'Khi phát triển ứng dụng mobile, việc chọn lựa giữa native và cross-platform...',
+      author: 'Vũ Minh H',
+      publishedAt: '2024-01-18',
+      category: 'Mobile',
+      tags: ['Mobile', 'React Native', 'Flutter'],
+      imageUrl: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=600&q=80',
+      views: 1050,
+      readTime: '11 phút đọc'
     }
   ];
 
@@ -108,7 +134,8 @@ const BlogsPage: React.FC = () => {
     'Security',
     'DevOps',
     'Cloud',
-    'Mobile'
+    'Mobile',
+    'Design'
   ];
 
   const filteredBlogs = blogs.filter(blog => {
@@ -129,6 +156,10 @@ const BlogsPage: React.FC = () => {
           src={blog.imageUrl}
           alt={blog.title}
           className="w-full h-48 object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = 'https://via.placeholder.com/400x240/10b981/ffffff?text=TopCV+Blog';
+          }}
         />
       </Link>
       <div className="p-6">
@@ -180,6 +211,10 @@ const BlogsPage: React.FC = () => {
             src={blog.imageUrl}
             alt={blog.title}
             className="w-full h-64 lg:h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = 'https://via.placeholder.com/600x400/10b981/ffffff?text=TopCV+Featured+Blog';
+            }}
           />
         </Link>
       </div>

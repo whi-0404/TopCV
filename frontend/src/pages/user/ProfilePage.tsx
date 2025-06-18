@@ -58,7 +58,10 @@ const ProfilePage: React.FC = () => {
       // Format date to LocalDateTime format for backend
       const formattedData = {
         ...formData,
-        dob: formData.dob ? `${formData.dob}T00:00:00` : undefined
+        dob: formData.dob ? (
+          // Nếu đã có datetime format thì giữ nguyên, không thì thêm time
+          formData.dob.includes('T') ? formData.dob : `${formData.dob}T00:00:00`
+        ) : undefined
       };
       
       console.log('Sending update data:', formattedData);
@@ -112,15 +115,8 @@ const ProfilePage: React.FC = () => {
     return new Date(dateString).toLocaleDateString('vi-VN');
   };
 
-  const sidebarItems: Array<{
-    icon: React.ComponentType<{ className?: string }>;
-    label: string;
-    active?: boolean;
-    href: string;
-    badge?: string;
-  }> = [
+  const sidebarItems = [
     { icon: HomeIcon, label: 'Tổng quan', active: false, href: '/user/dashboard' },
-    { icon: UserIcon, label: 'Tin nhắn', badge: '1', active: false, href: '/user/messages' },
     { icon: BriefcaseIcon, label: 'Công việc đã ứng tuyển', href: '/user/applications' },
     { icon: HeartIcon, label: 'Công việc yêu thích', href: '/user/favorites' },
     { icon: UserCircleIcon, label: 'Trang cá nhân', active: true, href: '/user/profile' },
@@ -168,11 +164,6 @@ const ProfilePage: React.FC = () => {
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="flex-1">{item.label}</span>
-                  {item.badge && (
-                    <span className="bg-emerald-600 text-white text-xs rounded-full px-2 py-0.5">
-                      {item.badge}
-                    </span>
-                  )}
                 </Link>
               </li>
             ))}
@@ -395,7 +386,9 @@ const ProfilePage: React.FC = () => {
                       {isEditing ? (
                         <input
                           type="date"
-                          value={formData.dob ? formData.dob.split('T')[0] : ''}
+                          value={formData.dob ? (
+                            formData.dob.includes('T') ? formData.dob.split('T')[0] : formData.dob
+                          ) : ''}
                           onChange={(e) => setFormData({...formData, dob: e.target.value})}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         />

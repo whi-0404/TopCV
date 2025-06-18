@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Integer> {
     boolean existsByUserIdAndJobPostId(String userId, Integer jobPostId);
@@ -25,4 +27,12 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
             "LOWER(a.jobPost.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(a.jobPost.company.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Application> searchApplications(@Param("keyword") String keyword, Pageable pageable);
+
+    // Fetch application with resume using JOIN FETCH to avoid lazy loading
+    @Query("SELECT a FROM Application a " +
+           "LEFT JOIN FETCH a.resumes " +
+           "LEFT JOIN FETCH a.jobPost jp " +
+           "LEFT JOIN FETCH jp.company " +
+           "WHERE a.id = :applicationId")
+    Optional<Application> findByIdWithResume(@Param("applicationId") Integer applicationId);
 }

@@ -40,26 +40,31 @@ public class OtpServiceImpl implements OtpService {
 
     public boolean verifyOtp(String email, String providedOtp) {
         try {
+            log.info("🔍 Verifying OTP for email: {}", email);
+            log.info("🔍 Provided OTP: '{}'", providedOtp);
+            
             String storedOtp = userRedisService.getOtp(email);
+            log.info("🔍 Stored OTP: '{}'", storedOtp);
 
             if (storedOtp == null) {
-                log.warn("No OTP found for email: {}", email);
+                log.warn("❌ No OTP found for email: {}", email);
                 return false;
             }
 
             boolean isValid = storedOtp.equals(providedOtp);
+            log.info("🔍 OTP comparison result: {} (stored: '{}' vs provided: '{}')", isValid, storedOtp, providedOtp);
 
             if (isValid) {
                 userRedisService.deleteOtp(email);
-                log.info("OTP verified successfully for email: {}", email);
+                log.info("✅ OTP verified successfully for email: {}", email);
             } else {
-                log.warn("Invalid OTP provided for email: {}", email);
+                log.warn("❌ Invalid OTP provided for email: {}. Expected: '{}', Got: '{}'", email, storedOtp, providedOtp);
             }
 
             return isValid;
 
         } catch (Exception e) {
-            log.error("Error verifying OTP for email: {}", email, e);
+            log.error("❌ Error verifying OTP for email: {}", email, e);
             return false;
         }
     }

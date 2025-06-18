@@ -84,14 +84,14 @@ public class CompanyMapperImpl implements CompanyMapper {
         response.setLogo(company.getLogo());
 
         if (company.getCategories() != null && !company.getCategories().isEmpty()) {
-            List<CompanyCategoryResponse> categories = company.getCategories().stream()
-                    .map(companyCategoryMapper::toResponse)
-                    .collect(Collectors.toList());
+        List<CompanyCategoryResponse> categories = company.getCategories().stream()
+                .map(companyCategoryMapper::toResponse)
+                .collect(Collectors.toList());
             response.setCategories(categories);
         } else {
             response.setCategories(List.of());
         }
-        
+
         response.setJobCount(company.getJobPosts() != null ? company.getJobPosts().size() : 0);
         return response;
     }

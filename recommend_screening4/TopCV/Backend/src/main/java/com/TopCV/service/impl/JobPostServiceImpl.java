@@ -185,7 +185,7 @@ public class JobPostServiceImpl implements JobPostService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(jobPostMapper::toResponse)
                         .toList())
                 .build();
@@ -312,7 +312,7 @@ public class JobPostServiceImpl implements JobPostService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(jobPostMapper::toJobPostDashboard)
                         .toList())
                 .build();
@@ -466,7 +466,7 @@ public class JobPostServiceImpl implements JobPostService {
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .Data(pageData.getContent().stream()
+                .data(pageData.getContent().stream()
                         .map(jobPostMapper::toJobPostDashboard)
                         .toList())
                 .build();

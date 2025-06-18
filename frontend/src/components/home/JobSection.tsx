@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   MapPinIcon, 
@@ -6,121 +6,70 @@ import {
   ClockIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
-import { JobPost } from '../../types';
+import { jobPostApi, JobPostDashboardResponse } from '../../services/api/jobPostApi';
 
 const JobSection: React.FC = () => {
-  // Mock data - sẽ thay thế bằng API call thực tế
-  const featuredJobs: JobPost[] = [
-    {
-      id: '1',
-      title: 'Java Developer (Java/Java Core/SpringBoot) Lương $1000 - $2500',
-      description: 'Chịu trách nhiệm nghiên cứu & phát triển backend sử dụng ngôn ngữ/công nghệ: Java, MySQL, Redis, Memcached...',
-      requirements: 'Thành thạo Java. Nắm rất vững lập trình hướng đối tượng, Design Pattern.',
-      benefits: 'Lương từ $1000 - $2500 phụ thuộc vào năng lực và kinh nghiệm',
-      workingTime: '8h30 – 17h45 từ thứ 2 đến thứ 6',
-      salary: '$1000 - $2500',
-      experienceRequired: 'Ít nhất 2 năm kinh nghiệm ở vị trí tương tự',
-      deadline: '25/06/2025',
-      hiringQuota: 1,
-      jobTypeId: '1',
-      jobLevelId: '1',
-      skillIds: ['1', '2'],
-      companyId: '1',
-      company: {
-        id: '1',
-        name: 'FPT Software',
-        description: 'Công ty phần mềm hàng đầu Việt Nam',
-        logo: 'https://via.placeholder.com/60x60?text=FPT',
-        website: 'https://fpt-software.com',
-        employeeRange: '1000-2000',
-        address: 'Hà Nội, Việt Nam',
-        categoryIds: [1],
-        employerId: '1',
-        isApproved: true,
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
-      },
-      isApproved: true,
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01'
-    },
-    {
-      id: '2',
-      title: 'React Frontend Developer - Up to $2000',
-      description: 'Phát triển giao diện người dùng sử dụng React, TypeScript, và các công nghệ frontend hiện đại',
-      requirements: 'Thành thạo React, TypeScript, HTML/CSS. Kinh nghiệm với Redux, Next.js',
-      benefits: 'Lương cạnh tranh, bảo hiểm sức khỏe, thưởng theo hiệu quả',
-      workingTime: '8h00 – 17h00 từ thứ 2 đến thứ 6',
-      salary: '$1200 - $2000',
-      experienceRequired: '1-3 năm kinh nghiệm',
-      deadline: '30/06/2025',
-      hiringQuota: 2,
-      jobTypeId: '1',
-      jobLevelId: '2',
-      skillIds: ['3', '4'],
-      companyId: '2',
-      company: {
-        id: '2',
-        name: 'VinGroup',
-        description: 'Tập đoàn đa ngành hàng đầu Việt Nam',
-        logo: 'https://via.placeholder.com/60x60?text=VIN',
-        website: 'https://vingroup.net',
-        employeeRange: '5000+',
-        address: 'Hồ Chí Minh, Việt Nam',
-        categoryIds: [1],
-        employerId: '2',
-        isApproved: true,
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
-      },
-      isApproved: true,
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01'
-    },
-    {
-      id: '3',
-      title: 'DevOps Engineer - AWS/Docker/Kubernetes',
-      description: 'Quản lý hạ tầng cloud, CI/CD pipeline, monitoring và deployment automation',
-      requirements: 'Kinh nghiệm với AWS, Docker, Kubernetes, Jenkins, Git',
-      benefits: 'Lương $1500-$3000, remote flexible, training certification',
-      workingTime: 'Linh hoạt, có thể remote',
-      salary: '$1500 - $3000',
-      experienceRequired: '2-5 năm kinh nghiệm',
-      deadline: '15/07/2025',
-      hiringQuota: 1,
-      jobTypeId: '2',
-      jobLevelId: '3',
-      skillIds: ['5', '6'],
-      companyId: '3',
-      company: {
-        id: '3',
-        name: 'Grab Vietnam',
-        description: 'Nền tảng super app hàng đầu Đông Nam Á',
-        logo: 'https://via.placeholder.com/60x60?text=GRAB',
-        website: 'https://grab.com',
-        employeeRange: '500-1000',
-        address: 'Hồ Chí Minh, Việt Nam',
-        categoryIds: [1],
-        employerId: '3',
-        isApproved: true,
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
-      },
-      isApproved: true,
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01'
-    }
-  ];
+  const [featuredJobs, setFeaturedJobs] = useState<JobPostDashboardResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const JobCard: React.FC<{ job: JobPost }> = ({ job }) => (
+  useEffect(() => {
+    fetchFeaturedJobs();
+  }, []);
+
+  const fetchFeaturedJobs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Lấy 6 jobs mới nhất làm featured jobs
+      const response = await jobPostApi.searchJobPosts({
+        page: 1,
+        size: 6,
+        sortBy: 'createdAt',
+        sortDirection: 'desc'
+      });
+
+      if (response.code === 1000 && response.result) {
+        setFeaturedJobs(response.result.data || []);
+      } else {
+        setError('Không thể tải danh sách việc làm');
+      }
+    } catch (err) {
+      console.error('Error fetching featured jobs:', err);
+      setError('Đã có lỗi xảy ra khi tải danh sách việc làm');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatSalary = (salary?: string | null): string => {
+    if (!salary) return 'Thỏa thuận';
+    return salary;
+  };
+
+  const formatDate = (dateString?: string | null): string => {
+    if (!dateString) return 'Không xác định';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const JobCard: React.FC<{ job: JobPostDashboardResponse }> = ({ job }) => (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border">
       <div className="flex items-start space-x-4">
         {/* Company Logo */}
         <div className="flex-shrink-0">
           <img
-            src={job.company?.logo}
-            alt={job.company?.name}
+            src={job.logo ? `http://localhost:8080/TopCV/uploads/${job.logo}` : `https://via.placeholder.com/48x48?text=${job.companyName?.charAt(0) || 'C'}`}
+            alt={job.companyName}
             className="w-12 h-12 rounded-lg object-cover bg-gray-100"
+            onError={(e) => {
+              e.currentTarget.src = `https://via.placeholder.com/48x48?text=${job.companyName?.charAt(0) || 'C'}`;
+            }}
           />
         </div>
 
@@ -133,36 +82,36 @@ const JobSection: React.FC = () => {
               </Link>
             </h3>
             <p className="text-sm text-gray-600 mt-1">
-              {job.company?.name}
+              {job.companyName}
             </p>
           </div>
 
           <p className="text-sm text-gray-700 line-clamp-2">
-            {job.description}
+            {job.experienceLevel ? `Yêu cầu: ${job.experienceLevel}` : 'Thông tin chi tiết sẽ có trong trang việc làm'}
           </p>
 
           <div className="flex flex-wrap gap-4 text-sm text-gray-600">
             <div className="flex items-center space-x-1">
               <CurrencyDollarIcon className="h-4 w-4 text-emerald-500" />
-              <span>{job.salary}</span>
+              <span>{formatSalary(job.salary)}</span>
             </div>
             <div className="flex items-center space-x-1">
               <MapPinIcon className="h-4 w-4 text-gray-400" />
-              <span>{job.company?.address}</span>
+              <span>{job.location}</span>
             </div>
             <div className="flex items-center space-x-1">
               <ClockIcon className="h-4 w-4 text-gray-400" />
-              <span>{job.experienceRequired}</span>
+              <span>Hạn: {formatDate(job.deadline)}</span>
             </div>
           </div>
 
           <div className="flex items-center justify-between">
             <div className="flex space-x-2">
               <span className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full text-xs font-medium">
-                Full-time
+                {job.type?.name || 'Full-time'}
               </span>
               <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
-                Senior
+                {job.level?.name || 'Junior'}
               </span>
             </div>
             <Link
@@ -177,6 +126,52 @@ const JobSection: React.FC = () => {
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Công việc IT
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Khám phá những cơ hội việc làm IT hấp dẫn từ các công ty hàng đầu
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Công việc IT
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Khám phá những cơ hội việc làm IT hấp dẫn từ các công ty hàng đầu
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={fetchFeaturedJobs}
+              className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+            >
+              Thử lại
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-gray-50">
@@ -197,11 +192,23 @@ const JobSection: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {featuredJobs.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
-        </div>
+        {featuredJobs.length > 0 ? (
+          <div className="grid lg:grid-cols-3 gap-6">
+            {featuredJobs.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Chưa có việc làm nào được đăng</p>
+            <Link
+              to="/jobs"
+              className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+            >
+              Xem tất cả việc làm
+            </Link>
+          </div>
+        )}
 
         <div className="text-center mt-12">
           <Link
@@ -217,4 +224,4 @@ const JobSection: React.FC = () => {
   );
 };
 
-export default JobSection; 
+export default JobSection;

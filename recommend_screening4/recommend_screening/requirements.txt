@@ -8,19 +8,22 @@ sentence-transformers>=2.2.0
 transformers>=4.20.0
 torch>=1.12.0
 
-# LangChain
+# LangChain - Updated versions to fix conflicts
 langchain>=0.1.0
-langchain-google-genai>=1.0.0
+langchain-google-genai>=2.0.0
 langchain-core>=0.1.0
+langchain-community
 
 # Document processing
 pypdf>=3.0.0
 python-docx>=0.8.11
 Pillow>=9.0.0
+PyMuPDF
 
 # Web framework (for API)
 fastapi>=0.100.0
 uvicorn>=0.22.0
+python-multipart==0.0.6
 
 # Optional database
 psycopg2-binary>=2.9.0
@@ -29,8 +32,5 @@ psycopg2-binary>=2.9.0
 python-dotenv>=1.0.0
 requests>=2.28.0
 
-# Additional dependencies for CV screening
-python-multipart==0.0.6
-google-generativeai==0.3.2
-langchain-community
-PyMuPDF
+# Google AI - Updated to compatible version
+google-generativeai>=0.8.0

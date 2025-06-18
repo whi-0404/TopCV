@@ -3,67 +3,37 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { jobPostApi, JobPostResponse, JobPostStatus } from '../services/api/jobPostApi';
 import { 
   MapPinIcon, 
-  CurrencyDollarIcon, 
-  CalendarIcon, 
+  CurrencyDollarIcon,
+  CalendarIcon,
   UserGroupIcon,
   HeartIcon,
   BriefcaseIcon,
   AcademicCapIcon,
-  ClockIcon
+  ClockIcon,
+  PaperAirplaneIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import Layout from '../components/layout/Layout';
 import Breadcrumb from '../components/common/Breadcrumb';
+import ApplyJobModal from '../components/job/ApplyJobModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const JobDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [job, setJob] = useState<JobPostResponse | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showApplyModal, setShowApplyModal] = useState(false);
 
   useEffect(() => {
     if (!id) {
       navigate('/jobs');
       return;
     }
-
-    const fetchJobDetails = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Fetch job details
-        const jobResponse = await jobPostApi.getJobPostDetail(Number(id));
-        
-        if (jobResponse.code === 1000 && jobResponse.result) {
-          setJob(jobResponse.result);
-          setIsFavorite(jobResponse.result.isFavorite);
-          
-          // If isFavorite is false, double-check with separate API call
-          // (in case the main response doesn't include user context)
-          if (!jobResponse.result.isFavorite) {
-            try {
-              const favoriteResponse = await jobPostApi.isFavoriteJob(Number(id));
-              if (favoriteResponse.code === 1000) {
-                setIsFavorite(favoriteResponse.result);
-              }
-            } catch (favoriteError) {
-              console.log('User not authenticated or error fetching favorite status');
-            }
-          }
-        } else {
-          setError('Không thể tải thông tin công việc');
-        }
-      } catch (err) {
-        console.error('Error fetching job details:', err);
-        setError('Đã có lỗi xảy ra khi tải thông tin công việc');
-      } finally {
-        setLoading(false);
-      }
-    };
 
     fetchJobDetails();
   }, [id, navigate]);
@@ -81,6 +51,64 @@ const JobDetailPage: React.FC = () => {
       }
     } catch (err) {
       console.error('Error toggling favorite:', err);
+    }
+  };
+
+  const handleApplyClick = () => {
+    if (!user) {
+      // Redirect to login if not authenticated
+      navigate('/auth/login', { 
+        state: { from: `/jobs/${id}` } 
+      });
+      return;
+    }
+
+    if (user.role !== 'USER') {
+      alert('Chỉ ứng viên mới có thể ứng tuyển việc làm');
+      return;
+    }
+
+    setShowApplyModal(true);
+  };
+
+  const handleApplySuccess = () => {
+    // Refresh job data to update canApply status
+    if (id) {
+      fetchJobDetails();
+    }
+  };
+
+  const fetchJobDetails = async () => {
+    if (!id) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+
+      const jobResponse = await jobPostApi.getJobPostDetail(Number(id));
+      
+      if (jobResponse.code === 1000 && jobResponse.result) {
+        setJob(jobResponse.result);
+        setIsFavorite(jobResponse.result.isFavorite);
+        
+        if (!jobResponse.result.isFavorite) {
+          try {
+            const favoriteResponse = await jobPostApi.isFavoriteJob(Number(id));
+            if (favoriteResponse.code === 1000) {
+              setIsFavorite(favoriteResponse.result);
+            }
+          } catch (favoriteError) {
+            console.log('User not authenticated or error fetching favorite status');
+          }
+        }
+      } else {
+        setError('Không thể tải thông tin công việc');
+      }
+    } catch (err) {
+      console.error('Error fetching job details:', err);
+      setError('Đã có lỗi xảy ra khi tải thông tin công việc');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -150,11 +178,11 @@ const JobDetailPage: React.FC = () => {
   };
 
      if (loading) {
-     return (
-       <Layout>
+  return (
+    <Layout>
          <div className="flex items-center justify-center min-h-96">
            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-         </div>
+          </div>
        </Layout>
      );
    }
@@ -170,7 +198,7 @@ const JobDetailPage: React.FC = () => {
            >
              Quay lại danh sách việc làm
            </button>
-         </div>
+        </div>
        </Layout>
      );
    }
@@ -186,8 +214,8 @@ const JobDetailPage: React.FC = () => {
              { label: job.title }
            ]} 
          />
-         
-         {/* Job Header */}
+
+        {/* Job Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex flex-col lg:flex-row gap-8">
@@ -199,12 +227,20 @@ const JobDetailPage: React.FC = () => {
                   <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                     {job.company.logo ? (
                       <img
-                        src={job.company.logo}
+                        src={`http://localhost:8080/TopCV/uploads/${job.company.logo}`}
                         alt={job.company.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('Company logo failed to load:', job.company.logo);
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.style.display = 'flex';
+                        }}
                       />
                     ) : (
                       <BriefcaseIcon className="w-8 h-8 text-gray-400" />
+                    )}
+                    {job.company.logo && (
+                      <BriefcaseIcon className="w-8 h-8 text-gray-400" style={{ display: 'none' }} />
                     )}
                   </div>
                 </div>
@@ -233,31 +269,31 @@ const JobDetailPage: React.FC = () => {
                   <div>
                     <div className="text-sm text-gray-600">Mức lương</div>
                     <div className="font-medium text-green-600">{formatSalary(job.salary)}</div>
-                  </div>
-                </div>
+              </div>
+            </div>
 
                 <div className="flex items-center gap-2">
                   <MapPinIcon className="w-5 h-5 text-gray-400" />
                   <div>
                     <div className="text-sm text-gray-600">Địa điểm</div>
                     <div className="font-medium">{job.location}</div>
-                  </div>
-                </div>
+          </div>
+        </div>
 
                 <div className="flex items-center gap-2">
                   <CalendarIcon className="w-5 h-5 text-gray-400" />
                   <div>
                     <div className="text-sm text-gray-600">Hạn ứng tuyển</div>
                     <div className="font-medium">{formatDeadline(job.deadline)}</div>
-                  </div>
                 </div>
+              </div>
 
                 <div className="flex items-center gap-2">
                   <UserGroupIcon className="w-5 h-5 text-gray-400" />
                   <div>
                     <div className="text-sm text-gray-600">Số lượng cần tuyển</div>
                     <div className="font-medium">{job.hiringQuota} người</div>
-                  </div>
+                    </div>
                 </div>
               </div>
 
@@ -280,9 +316,9 @@ const JobDetailPage: React.FC = () => {
                   >
                     {skill.name}
                   </span>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
 
             {/* Action Buttons */}
             <div className="flex-shrink-0 flex flex-col sm:flex-row lg:flex-col gap-3">
@@ -303,14 +339,18 @@ const JobDetailPage: React.FC = () => {
               </button>
 
               {job.canApply !== false && job.status === 'ACTIVE' && (
-                <button className="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                <button 
+                  onClick={handleApplyClick}
+                  className="flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  <PaperAirplaneIcon className="w-5 h-5" />
                   Ứng tuyển ngay
                 </button>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
              {/* Job Content */}
        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -327,21 +367,21 @@ const JobDetailPage: React.FC = () => {
                      <div className="flex justify-between">
                        <span className="text-gray-600">Vị trí:</span>
                        <span className="font-medium">{job.title}</span>
-                     </div>
+                        </div>
                      <div className="flex justify-between">
                        <span className="text-gray-600">Địa điểm:</span>
                        <span className="font-medium">{job.location}</span>
-                     </div>
+                      </div>
                      <div className="flex justify-between">
                        <span className="text-gray-600">Mức lương:</span>
                        <span className="font-medium text-green-600">{formatSalary(job.salary)}</span>
-                     </div>
+                    </div>
                      <div className="flex justify-between">
                        <span className="text-gray-600">Kinh nghiệm:</span>
                        <span className="font-medium">{job.experienceRequired}</span>
-                     </div>
-                   </div>
-                 </div>
+                        </div>
+                      </div>
+                    </div>
                  
                  <div>
                    <h3 className="text-lg font-medium mb-3">Thời gian & Ứng tuyển</h3>
@@ -349,21 +389,21 @@ const JobDetailPage: React.FC = () => {
                      <div className="flex justify-between">
                        <span className="text-gray-600">Hạn ứng tuyển:</span>
                        <span className="font-medium">{formatDeadline(job.deadline)}</span>
-                     </div>
+                  </div>
                      <div className="flex justify-between">
                        <span className="text-gray-600">Số người cần tuyển:</span>
                        <span className="font-medium">{job.hiringQuota} người</span>
-                     </div>
+                        </div>
                      <div className="flex justify-between">
                        <span className="text-gray-600">Đã ứng tuyển:</span>
                        <span className="font-medium">{job.appliedCount} người</span>
-                     </div>
+                      </div>
                      <div className="flex justify-between">
                        <span className="text-gray-600">Trạng thái:</span>
                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
                          {getStatusText(job.status)}
                        </span>
-                     </div>
+                    </div>
                    </div>
                  </div>
                </div>
@@ -401,13 +441,13 @@ const JobDetailPage: React.FC = () => {
                      <li>Kiểm tra kỹ các yêu cầu công việc trước khi ứng tuyển</li>
                      <li>Hạn cuối ứng tuyển: {formatDeadline(job.deadline)}</li>
                    </ul>
-                 </div>
-               </div>
-             </div>
-           </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+            {/* Sidebar */}
+            <div className="space-y-6">
                          {/* Job Summary */}
              <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
                <h3 className="text-lg font-semibold mb-4">Thông tin chung</h3>
@@ -415,25 +455,25 @@ const JobDetailPage: React.FC = () => {
                  <div className="flex justify-between items-center py-2 hover:bg-gray-50 rounded px-2 -mx-2 transition-colors">
                    <span className="text-gray-600">Kinh nghiệm:</span>
                    <span className="font-medium">{job.experienceRequired}</span>
-                 </div>
+                  </div>
                  <div className="flex justify-between items-center py-2 hover:bg-gray-50 rounded px-2 -mx-2 transition-colors">
                    <span className="text-gray-600">Loại công việc:</span>
                    <span className="font-medium text-blue-600">{job.jobType.name}</span>
-                 </div>
+                  </div>
                  <div className="flex justify-between items-center py-2 hover:bg-gray-50 rounded px-2 -mx-2 transition-colors">
                    <span className="text-gray-600">Cấp bậc:</span>
                    <span className="font-medium text-green-600">{job.jobLevel.name}</span>
-                 </div>
+                  </div>
                  <div className="flex justify-between items-center py-2 hover:bg-gray-50 rounded px-2 -mx-2 transition-colors">
                    <span className="text-gray-600">Số người đã ứng tuyển:</span>
                    <span className="font-medium text-orange-600">{job.appliedCount}</span>
-                 </div>
+                  </div>
                  <div className="flex justify-between items-center py-2 hover:bg-gray-50 rounded px-2 -mx-2 transition-colors">
                    <span className="text-gray-600">Cần tuyển:</span>
                    <span className="font-medium text-purple-600">{job.hiringQuota} người</span>
-                 </div>
-               </div>
-             </div>
+                  </div>
+                </div>
+              </div>
 
             {/* Company Info */}
             <div className="bg-white rounded-lg shadow-sm p-6">
@@ -442,20 +482,30 @@ const JobDetailPage: React.FC = () => {
                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                   {job.company.logo ? (
                     <img
-                      src={job.company.logo}
+                      src={`http://localhost:8080/TopCV/uploads/${job.company.logo}`}
                       alt={job.company.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error('Company logo failed to load in sidebar:', job.company.logo);
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (fallback) {
+                          fallback.style.display = 'block';
+                        }
+                      }}
                     />
-                  ) : (
-                    <BriefcaseIcon className="w-6 h-6 text-gray-400" />
-                  )}
+                  ) : null}
+                  <BriefcaseIcon 
+                    className="w-6 h-6 text-gray-400" 
+                    style={{ display: job.company.logo ? 'none' : 'block' }}
+                  />
                 </div>
                 <div>
                   <h4 className="font-medium">{job.company.name}</h4>
                   <p className="text-sm text-gray-600">{job.company.jobCount} việc làm</p>
                 </div>
               </div>
-              
+
               <button
                 onClick={() => navigate(`/companies/${job.company.id}`)}
                 className="w-full px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
@@ -485,11 +535,23 @@ const JobDetailPage: React.FC = () => {
               </div>
             </div>
           </div>
-                 </div>
+        </div>
+      </div>
        </div>
-       </div>
-     </Layout>
-   );
- };
+
+       {/* Apply Job Modal */}
+       {job && (
+         <ApplyJobModal
+           isOpen={showApplyModal}
+           onClose={() => setShowApplyModal(false)}
+           jobId={job.id}
+           jobTitle={job.title}
+           companyName={job.company.name}
+           onSuccess={handleApplySuccess}
+         />
+       )}
+    </Layout>
+  );
+};
 
 export default JobDetailPage; 

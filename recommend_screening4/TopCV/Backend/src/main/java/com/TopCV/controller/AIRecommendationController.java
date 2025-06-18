@@ -7,6 +7,7 @@ import com.TopCV.service.PythonServiceClient;
 import com.TopCV.service.JobSyncService;
 import com.TopCV.service.ApplicationScreeningService;
 import com.TopCV.service.UserService;
+import com.TopCV.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -28,6 +29,7 @@ public class AIRecommendationController {
     private final JobSyncService jobSyncService;
     private final ApplicationScreeningService applicationScreeningService;
     private final UserService userService;
+    private final FileService fileService;
 
     /**
      * API phân tích CV và gợi ý công việc
@@ -101,6 +103,19 @@ public class AIRecommendationController {
         String candidateName = user.getFullname();
         String candidateEmail = user.getEmail();
         
+        // 🔥 LƯU CV FILE VỚI UUID FILENAME TRƯỚC
+        String savedFilePath;
+        String actualFileName;
+        try {
+            savedFilePath = fileService.uploadFile(cvFile, "resume");
+            // savedFilePath format: "resume/UUID_filename.pdf"
+            actualFileName = savedFilePath.substring(savedFilePath.lastIndexOf("/") + 1);
+            log.info("✅ CV file saved successfully: {}", savedFilePath);
+        } catch (Exception e) {
+            log.error("❌ Failed to save CV file: {}", e.getMessage());
+            return ResponseEntity.status(500).body(null);
+        }
+        
         // Sync specific job trước khi screen
         log.info("Syncing job {} to Python service", jobId);
         jobSyncService.syncJobToPython(jobId);
@@ -111,10 +126,16 @@ public class AIRecommendationController {
         // Enhance response với thông tin bổ sung cho UI
         enhanceScreeningResponse(response, candidateName, candidateEmail, cvFile.getOriginalFilename());
         
-        // LƯU KẾT QUẢ SCREENING VÀO DATABASE
+        // LƯU KẾT QUẢ SCREENING VÀO DATABASE VỚI ĐÚNG FILENAME
         try {
-            applicationScreeningService.saveScreeningResult(response, user, cvFile.getOriginalFilename());
-            log.info("✅ Screening result saved to database successfully");
+            applicationScreeningService.saveScreeningResult(
+                response, 
+                user, 
+                actualFileName, // UUID filename đã lưu
+                cvFile.getOriginalFilename(), // Original filename  
+                cvFile.getSize() // File size
+            );
+            log.info("✅ Screening result saved to database successfully with Resume record - File: {}", actualFileName);
         } catch (Exception e) {
             log.error("❌ Failed to save screening result to database: {}", e.getMessage());
             // Không throw exception để không ảnh hưởng response cho user
@@ -125,8 +146,6 @@ public class AIRecommendationController {
         
         return ResponseEntity.ok(response);
     }
-
-
 
     /**
      * Health check cho Python service

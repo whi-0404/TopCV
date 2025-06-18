@@ -33,7 +33,7 @@ export interface UserResponse {
 
 export interface UserUpdateRequest {
   userName?: string;
-  fullName?: string;
+  fullName?: string; // Backend UserUpdateRequest dùng fullName (chữ N viết hoa)
   phone?: string;
   address?: string;
   avt?: string;
@@ -149,5 +149,12 @@ export const userApi = {
   // Alias for updateMyInfo
   updateProfile: async (data: UserUpdateRequest): Promise<ApiResponse<UserResponse>> => {
     return userApi.updateMyInfo(data);
+  },
+
+  getCandidateByApplicationId: async (applicationId: number): Promise<UserResponse> => {
+    const response = await apiClient.get<ApiResponse<UserResponse>>(
+      `/users/candidate/${applicationId}`
+    );
+    return response.data.result;
   },
 }; 

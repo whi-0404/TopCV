@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/layout/Layout';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   MagnifyingGlassIcon,
   MapPinIcon,
@@ -9,8 +9,10 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   ChevronRightIcon,
-  ChevronLeftIcon
+  ChevronLeftIcon,
+  PaperAirplaneIcon
 } from '@heroicons/react/24/outline';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   jobPostApi, 
   type JobPostDashboardResponse, 
@@ -27,14 +29,15 @@ import {
 } from '../services/api/jobTypeLevelApi';
 
 const JobsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedFilters, setExpandedFilters] = useState({
     jobType: true,
     category: true,
-    experience: true,
-    salary: true
+    experience: true
   });
   
   // API Data States
@@ -51,7 +54,6 @@ const JobsPage: React.FC = () => {
   const [selectedJobTypes, setSelectedJobTypes] = useState<number[]>([]);
   const [selectedJobLevels, setSelectedJobLevels] = useState<number[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
-  const [selectedSalaryRange, setSelectedSalaryRange] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortDirection, setSortDirection] = useState('desc');
   
@@ -71,7 +73,6 @@ const JobsPage: React.FC = () => {
     selectedJobTypes, 
     selectedJobLevels, 
     selectedSkills, 
-    selectedSalaryRange,
     sortBy,
     sortDirection,
     currentPage
@@ -85,9 +86,9 @@ const JobsPage: React.FC = () => {
         skillApi.getAllSkills()
       ]);
       
-      setJobTypes(jobTypesRes.result);
-      setJobLevels(jobLevelsRes.result);
-      setSkills(skillsRes.result);
+      if (jobTypesRes.code === 1000) setJobTypes(jobTypesRes.result);
+      if (jobLevelsRes.code === 1000) setJobLevels(jobLevelsRes.result);
+      if (skillsRes.code === 1000) setSkills(skillsRes.result);
     } catch (error) {
       console.error('Error loading initial data:', error);
       setError('Không thể tải dữ liệu ban đầu');
@@ -103,7 +104,6 @@ const JobsPage: React.FC = () => {
         jobTypeIds: selectedJobTypes.length > 0 ? selectedJobTypes : undefined,
         jobLevelIds: selectedJobLevels.length > 0 ? selectedJobLevels : undefined,
         skillIds: selectedSkills.length > 0 ? selectedSkills : undefined,
-        salaryRange: selectedSalaryRange || undefined,
         sortBy,
         sortDirection
       };
@@ -114,32 +114,73 @@ const JobsPage: React.FC = () => {
         size: jobsPerPage
       });
 
-      console.log('API Response:', response);
-      console.log('Jobs data:', response.result.data);
-      
-      // Debug first job to see structure
-      if (response.result.data && response.result.data.length > 0) {
-        console.log('First job structure:', response.result.data[0]);
-        console.log('First job salary:', response.result.data[0].salary);
-        console.log('First job appliedCount:', response.result.data[0].appliedCount);
-        console.log('First job deadline:', response.result.data[0].deadline);
+      if (response.code === 1000 && response.result) {
+        const jobsData = response.result.data || [];
+        setJobs(jobsData);
+        setTotalPages(response.result.totalPages || 1);
+        setTotalElements(response.result.totalElements || 0);
+        setError('');
+      } else {
+        setError('Không thể tải danh sách công việc');
+        setJobs([]);
       }
-
-      // Ensure we have valid data
-      const jobsData = response.result.data || [];
-      console.log('Processing jobs:', jobsData.length, 'jobs');
-
-      setJobs(jobsData);
-      setTotalPages(response.result.totalPages || 1);
-      setTotalElements(response.result.totalElements || 0);
-      setError('');
     } catch (error: any) {
       console.error('Error searching jobs:', error);
-      setError('Không thể tải danh sách công việc');
+      
+      // Try fallback for 400 errors (bad request) or when filters are active
+      const hasActiveFiltersNow = selectedJobTypes.length > 0 || 
+                                  selectedJobLevels.length > 0 || 
+                                  selectedSkills.length > 0 || 
+                                  searchTerm !== '' ||
+                                  selectedLocation !== '';
+      
+      if (error.response?.status === 400 && hasActiveFiltersNow) {
+        const fallbackSuccess = await loadBasicJobs();
+        if (fallbackSuccess) {
+          setError('Một số bộ lọc không khả dụng. Hiển thị kết quả cơ bản.');
+          return;
+        }
+      }
+      
+      // More specific error messages
+      let errorMessage = 'Không thể tải danh sách công việc';
+      if (error.response?.status === 400) {
+        errorMessage = 'Thông số tìm kiếm không hợp lệ. Vui lòng thử lại.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+      } else if (error.code === 'ERR_NETWORK') {
+        errorMessage = 'Không thể kết nối tới server. Vui lòng kiểm tra kết nối mạng.';
+      }
+      
+      setError(errorMessage);
       setJobs([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fallback function to load basic jobs without complex filters
+  const loadBasicJobs = async () => {
+    try {
+      const response = await jobPostApi.searchJobPosts({
+        page: currentPage,
+        size: jobsPerPage,
+        sortBy: 'createdAt',
+        sortDirection: 'desc'
+      });
+
+      if (response.code === 1000 && response.result) {
+        const jobsData = response.result.data || [];
+        setJobs(jobsData);
+        setTotalPages(response.result.totalPages || 1);
+        setTotalElements(response.result.totalElements || 0);
+        return true;
+      }
+    } catch (error) {
+      console.error('Fallback failed:', error);
+      return false;
+    }
+    return false;
   };
 
   const handleSearch = () => {
@@ -152,6 +193,23 @@ const JobsPage: React.FC = () => {
       ...prev,
       [filterName]: !prev[filterName]
     }));
+  };
+
+  const clearAllFilters = () => {
+    setSelectedJobTypes([]);
+    setSelectedJobLevels([]);
+    setSelectedSkills([]);
+    setSearchTerm('');
+    setSelectedLocation('');
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = () => {
+    return selectedJobTypes.length > 0 || 
+           selectedJobLevels.length > 0 || 
+           selectedSkills.length > 0 || 
+           searchTerm !== '' ||
+           selectedLocation !== '';
   };
 
   const handleJobTypeChange = (jobTypeId: number, checked: boolean) => {
@@ -181,6 +239,24 @@ const JobsPage: React.FC = () => {
     setCurrentPage(1);
   };
 
+  const handleApplyClick = (job: JobPostDashboardResponse) => {
+    if (!user) {
+      // Redirect to login if not authenticated
+      navigate('/auth/user/login', { 
+        state: { from: `/jobs/${job.id}` } 
+      });
+      return;
+    }
+
+    if (user.role !== 'USER') {
+      alert('Chỉ ứng viên mới có thể ứng tuyển việc làm');
+      return;
+    }
+
+    // Navigate to job detail page where they can apply
+    navigate(`/jobs/${job.id}`);
+  };
+
   const FilterSection: React.FC<{ title: string; filterKey: keyof typeof expandedFilters; children: React.ReactNode }> = 
     ({ title, filterKey, children }) => (
     <div className="border-b border-gray-200 pb-4 mb-4">
@@ -204,6 +280,20 @@ const JobsPage: React.FC = () => {
       if (!salary || salary.trim() === '' || salary.toLowerCase() === 'null' || salary.toLowerCase() === 'undefined') {
         return 'Thỏa thuận';
       }
+      
+      // Try to format Vietnamese currency if it's a number
+      if (!isNaN(Number(salary))) {
+        const amount = Number(salary);
+        if (amount >= 1000000) {
+          return `${(amount / 1000000).toFixed(0)} triệu VNĐ`;
+        } else if (amount >= 1000) {
+          return `${(amount / 1000).toFixed(0)}K VNĐ`;
+        } else {
+          return `${amount.toLocaleString('vi-VN')} VNĐ`;
+        }
+      }
+      
+      // Return as is if it's already formatted string
       return salary;
     };
 
@@ -219,11 +309,36 @@ const JobsPage: React.FC = () => {
         return 'Hạn: Không xác định';
       }
       try {
-        const date = new Date(deadline);
+        // Handle LocalDate format from backend (yyyy-mm-dd)
+        let date: Date;
+        
+        // Backend returns LocalDate as "yyyy-mm-dd" string
+        if (deadline.includes('-') && deadline.length === 10) {
+          date = new Date(deadline + 'T00:00:00');
+        } else {
+          date = new Date(deadline);
+        }
+        
         if (isNaN(date.getTime())) {
           return 'Hạn: Không xác định';
         }
-        return `Hạn: ${date.toLocaleDateString('vi-VN')}`;
+        
+        // Calculate days remaining
+        const now = new Date();
+        const diffTime = date.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 0) {
+          return 'Hạn: Đã hết hạn';
+        } else if (diffDays === 0) {
+          return 'Hạn: Hôm nay';
+        } else if (diffDays === 1) {
+          return 'Hạn: Ngày mai';
+        } else if (diffDays <= 7) {
+          return `Hạn: ${diffDays} ngày nữa`;
+        } else {
+          return `Hạn: ${date.toLocaleDateString('vi-VN')}`;
+        }
       } catch (error) {
         return 'Hạn: Không xác định';
       }
@@ -278,8 +393,12 @@ const JobsPage: React.FC = () => {
               </div>
             </div>
           </div>
-          <button className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors flex-shrink-0">
-            Ứng tuyển
+          <button 
+            onClick={() => handleApplyClick(job)}
+            className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors flex-shrink-0 flex items-center space-x-2"
+          >
+            <PaperAirplaneIcon className="h-4 w-4" />
+            <span>Ứng tuyển</span>
           </button>
         </div>
       </div>
@@ -345,12 +464,46 @@ const JobsPage: React.FC = () => {
           <div className="flex gap-8">
             <div className="w-64 flex-shrink-0">
               <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Bộ lọc</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900">Bộ lọc</h3>
+                  {hasActiveFilters() && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                    >
+                      Xóa tất cả
+                    </button>
+                  )}
+                </div>
+                
+                {/* Active Filters Summary */}
+                {hasActiveFilters() && (
+                  <div className="mb-4 p-3 bg-emerald-50 rounded-lg">
+                    <div className="text-xs text-emerald-700 font-medium mb-2">Đang áp dụng:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedJobTypes.length > 0 && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-emerald-100 text-emerald-700">
+                          {selectedJobTypes.length} loại CV
+                        </span>
+                      )}
+                      {selectedJobLevels.length > 0 && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
+                          {selectedJobLevels.length} cấp độ
+                        </span>
+                      )}
+                      {selectedSkills.length > 0 && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
+                          {selectedSkills.length} kỹ năng
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 <FilterSection title="Loại công việc" filterKey="jobType">
                   <div className="space-y-2">
                     {jobTypes.map((type) => (
-                      <label key={type.id} className="flex items-center">
+                      <label key={type.id} className="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded">
                         <input 
                           type="checkbox" 
                           checked={selectedJobTypes.includes(type.id)}
@@ -358,6 +511,9 @@ const JobsPage: React.FC = () => {
                           className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" 
                         />
                         <span className="ml-2 text-sm text-gray-700">{type.name}</span>
+                        {type.description && (
+                          <span className="ml-1 text-xs text-gray-400">({type.description})</span>
+                        )}
                       </label>
                     ))}
                   </div>
@@ -366,7 +522,7 @@ const JobsPage: React.FC = () => {
                 <FilterSection title="Cấp độ" filterKey="category">
                   <div className="space-y-2">
                     {jobLevels.map((level) => (
-                      <label key={level.id} className="flex items-center">
+                      <label key={level.id} className="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded">
                         <input 
                           type="checkbox" 
                           checked={selectedJobLevels.includes(level.id)}
@@ -374,6 +530,9 @@ const JobsPage: React.FC = () => {
                           className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" 
                         />
                         <span className="ml-2 text-sm text-gray-700">{level.name}</span>
+                        {level.description && (
+                          <span className="ml-1 text-xs text-gray-400">({level.description})</span>
+                        )}
                       </label>
                     ))}
                   </div>
@@ -382,7 +541,7 @@ const JobsPage: React.FC = () => {
                 <FilterSection title="Kỹ năng" filterKey="experience">
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {skills.map((skill) => (
-                      <label key={skill.id} className="flex items-center">
+                      <label key={skill.id} className="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded">
                         <input 
                           type="checkbox" 
                           checked={selectedSkills.includes(skill.id)}
@@ -390,24 +549,9 @@ const JobsPage: React.FC = () => {
                           className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" 
                         />
                         <span className="ml-2 text-sm text-gray-700">{skill.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                </FilterSection>
-
-                <FilterSection title="Mức lương" filterKey="salary">
-                  <div className="space-y-2">
-                    {['Dưới 10 triệu', '10-20 triệu', '20-30 triệu', '30-50 triệu', 'Trên 50 triệu'].map((salary) => (
-                      <label key={salary} className="flex items-center">
-                        <input 
-                          type="radio" 
-                          name="salary"
-                          value={salary}
-                          checked={selectedSalaryRange === salary}
-                          onChange={(e) => setSelectedSalaryRange(e.target.value)}
-                          className="border-gray-300 text-emerald-600 focus:ring-emerald-500" 
-                        />
-                        <span className="ml-2 text-sm text-gray-700">{salary}</span>
+                        {skill.description && (
+                          <span className="ml-1 text-xs text-gray-400">({skill.description})</span>
+                        )}
                       </label>
                     ))}
                   </div>

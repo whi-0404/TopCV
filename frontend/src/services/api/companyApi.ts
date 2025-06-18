@@ -1,5 +1,6 @@
 import apiClient from './config';
 import { ApiResponse } from './authApi';
+import { FileUploadResponse } from './resumeApi';
 
 // Types dựa trên backend DTOs
 export interface CompanyCreationRequest {
@@ -148,6 +149,19 @@ export const companyApi = {
   // GET /api/v1/companies/my-company
   getMyCompany: async (): Promise<ApiResponse<CompanyResponse>> => {
     const response = await apiClient.get('/companies/my-company');
+    return response.data;
+  },
+
+  // POST /api/v1/companies/{id}/upload-logo
+  uploadLogo: async (companyId: number, file: File): Promise<ApiResponse<FileUploadResponse>> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await apiClient.post(`/companies/${companyId}/upload-logo`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 }; 

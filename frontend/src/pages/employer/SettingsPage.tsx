@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   HomeIcon,
@@ -15,11 +15,24 @@ import {
   BellIcon,
   ShieldCheckIcon,
   GlobeAltIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
+import { useAuth } from '../../contexts/AuthContext';
+import { userApi, companyApi, type UserResponse, type UserUpdateRequest } from '../../services/api';
 
 const EmployerSettingsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, setUser, logout } = useAuth();
+  
+  const [userProfile, setUserProfile] = useState<UserResponse | null>(null);
+  const [company, setCompany] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [companyLoading, setCompanyLoading] = useState(true);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState<UserUpdateRequest>({});
+  
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
@@ -29,22 +42,94 @@ const EmployerSettingsPage: React.FC = () => {
     messageAlerts: true
   });
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userInfo');
-    sessionStorage.clear();
-    navigate('/');
+  useEffect(() => {
+    if (!user || user.role !== 'EMPLOYER') {
+      navigate('/auth/login');
+      return;
+    }
+    
+    fetchUserProfile();
+    fetchCompanyInfo();
+  }, [user, navigate]);
+
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await userApi.getMyInfo();
+      setUserProfile(response.result);
+      setFormData({
+        userName: response.result.userName,
+        fullName: response.result.fullname,
+        phone: response.result.phone,
+        address: response.result.address,
+        dob: response.result.dob ? response.result.dob.split('T')[0] : '' // Convert to YYYY-MM-DD format
+      });
+    } catch (error: any) {
+      console.error('Error fetching user profile:', error);
+      setError('Không thể tải thông tin cá nhân');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const sidebarItems = [
-    { icon: HomeIcon, label: 'Tổng quan', active: false, href: '/employer/dashboard' },
-    { icon: BriefcaseIcon, label: 'Tin nhắn', href: '/employer/messages' },
-    { icon: BuildingOfficeIcon, label: 'Hồ sơ công ty', href: '/employer/company' },
-    { icon: UsersIcon, label: 'Tất cả ứng viên', href: '/employer/candidates' },
-    { icon: DocumentTextIcon, label: 'Danh sách công việc', href: '/employer/jobs' },
-    { icon: Cog6ToothIcon, label: 'Cài đặt', active: true, href: '/employer/settings' },
-    { icon: QuestionMarkCircleIcon, label: 'Trợ giúp', href: '/employer/help' }
-  ];
+  const fetchCompanyInfo = async () => {
+    try {
+      setCompanyLoading(true);
+      const response = await companyApi.getMyCompany();
+      if (response.code === 1000 && response.result) {
+        setCompany(response.result);
+      }
+    } catch (err) {
+      console.error('Error fetching company info:', err);
+    } finally {
+      setCompanyLoading(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setSaveLoading(true);
+      
+      // Format date to LocalDateTime format for backend
+      const formattedData = {
+        ...formData,
+        dob: formData.dob ? `${formData.dob}T00:00:00` : undefined
+      };
+      
+      console.log('Sending update data:', formattedData);
+      
+      const response = await userApi.updateMyInfo(formattedData);
+      setUserProfile(response.result);
+      
+      // Update auth context
+      const updatedUser = {
+        ...user!,
+        userName: response.result.userName,
+        fullname: response.result.fullname,
+        phone: response.result.phone,
+        address: response.result.address,
+        dob: response.result.dob
+      };
+      setUser(updatedUser);
+      
+      alert('Cập nhật thông tin thành công!');
+    } catch (error: any) {
+      console.error('Update profile error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra';
+      alert('Lỗi khi cập nhật thông tin: ' + errorMessage);
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/auth/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   const handleNotificationChange = (key: string) => {
     setNotifications(prev => ({
@@ -52,6 +137,32 @@ const EmployerSettingsPage: React.FC = () => {
       [key]: !prev[key as keyof typeof prev]
     }));
   };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Chưa cập nhật';
+    return new Date(dateString).toLocaleDateString('vi-VN');
+  };
+
+  const sidebarItems = [
+    { icon: HomeIcon, label: 'Tổng quan', href: '/employer/dashboard' },
+    { icon: BriefcaseIcon, label: 'Danh sách công việc', href: '/employer/jobs' },
+    { icon: UsersIcon, label: 'Tất cả ứng viên', href: '/employer/candidates' },
+    { icon: BuildingOfficeIcon, label: 'Hồ sơ công ty', href: '/employer/company' },
+    { icon: Cog6ToothIcon, label: 'Cài đặt', active: true, href: '/employer/settings' },
+    { icon: QuestionMarkCircleIcon, label: 'Trợ giúp', href: '/employer/help' }
+  ];
+
+  // Check if user is employer
+  if (!user || user.role !== 'EMPLOYER') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Không có quyền truy cập</h1>
+          <p className="text-gray-600">Bạn không có quyền truy cập trang này.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -90,6 +201,25 @@ const EmployerSettingsPage: React.FC = () => {
 
         {/* User Profile - Sticky at bottom */}
         <div className="sticky bottom-0 bg-white p-4 border-t border-gray-200">
+          <div className="flex items-center space-x-3 mb-3">
+            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+              {user?.avt ? (
+                <img src={user.avt} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
+              ) : (
+                <span className="text-emerald-600 font-medium text-sm">
+                  {user?.fullname?.charAt(0)?.toUpperCase() || 'E'}
+                </span>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {user?.fullname}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user?.email}
+              </p>
+            </div>
+          </div>
           <button 
             onClick={handleLogout}
             className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -97,22 +227,6 @@ const EmployerSettingsPage: React.FC = () => {
             <ArrowRightOnRectangleIcon className="h-4 w-4" />
             <span>Đăng xuất</span>
           </button>
-          
-          <div className="mt-3 flex items-center space-x-3">
-            <img
-              src="https://via.placeholder.com/40x40?text=NQ"
-              alt="User Avatar"
-              className="w-10 h-10 rounded-full"
-            />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                Nguyễn Quang Huy
-              </p>
-              <p className="text-xs text-gray-500 truncate">
-                qhi@email.com
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -124,7 +238,16 @@ const EmployerSettingsPage: React.FC = () => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600">Company</span>
-                <span className="text-orange-600 font-medium">VNG</span>
+                {companyLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-600"></div>
+                    <span className="text-orange-600 font-medium">Đang tải...</span>
+                  </div>
+                ) : (
+                  <span className="text-orange-600 font-medium">
+                    {company?.name || 'Chưa có công ty'}
+                  </span>
+                )}
                 <ChevronDownIcon className="h-4 w-4 text-gray-400" />
               </div>
             </div>
@@ -149,6 +272,16 @@ const EmployerSettingsPage: React.FC = () => {
         {/* Settings Content */}
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-4xl mx-auto space-y-6">
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
+                  <span className="text-red-700">{error}</span>
+                </div>
+              </div>
+            )}
+
             {/* Account Information */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-center space-x-3 mb-6">
@@ -156,55 +289,89 @@ const EmployerSettingsPage: React.FC = () => {
                 <h2 className="text-lg font-semibold text-gray-900">Thông tin tài khoản</h2>
               </div>
               
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Họ và tên
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="Nguyễn Quang Huy"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                  />
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mb-4"></div>
+                  <p className="text-gray-600">Đang tải thông tin...</p>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    defaultValue="qhi@email.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                  />
+              ) : (
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Họ và tên
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.fullName || ''}
+                      onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                      placeholder="Nhập họ và tên"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={userProfile?.email || ''}
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Email không thể thay đổi</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Số điện thoại
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.phone || ''}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                      placeholder="Nhập số điện thoại"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ngày sinh
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.dob || ''}
+                      onChange={(e) => setFormData({...formData, dob: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Địa chỉ
+                    </label>
+                    <textarea
+                      value={formData.address || ''}
+                      onChange={(e) => setFormData({...formData, address: e.target.value})}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                      placeholder="Nhập địa chỉ"
+                    />
+                  </div>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Số điện thoại
-                  </label>
-                  <input
-                    type="tel"
-                    defaultValue="0901234567"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Chức vụ
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="HR Manager"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                  />
-                </div>
-              </div>
+              )}
               
               <div className="mt-6 flex justify-end">
-                <button className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors">
-                  Lưu thay đổi
+                <button 
+                  onClick={handleSaveProfile}
+                  disabled={saveLoading || loading}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  {saveLoading && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  )}
+                  <span>{saveLoading ? 'Đang lưu...' : 'Lưu thay đổi'}</span>
                 </button>
               </div>
             </div>
@@ -238,6 +405,11 @@ const EmployerSettingsPage: React.FC = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                       />
                     </div>
+                  </div>
+                  <div className="mt-4 flex justify-end">
+                    <button className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors">
+                      Đổi mật khẩu
+                    </button>
                   </div>
                 </div>
                 

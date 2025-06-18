@@ -5,9 +5,11 @@ import com.TopCV.dto.request.CompanySearchRequest;
 import com.TopCV.dto.response.ApiResponse;
 import com.TopCV.dto.response.CompanyDashboardResponse;
 import com.TopCV.dto.response.CompanyResponse;
-
+import com.TopCV.dto.response.FileUploadResponse;
 import com.TopCV.dto.response.PageResponse;
 import com.TopCV.service.CompanyService;
+import com.TopCV.service.FileService;
+import com.TopCV.enums.FileType;
 import com.TopCV.exception.AppException;
 import com.TopCV.exception.ErrorCode;
 
@@ -20,6 +22,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -31,6 +34,7 @@ import java.util.List;
 public class CompanyController {
 
     final CompanyService companyService;
+    final FileService fileService;
 
 
     @GetMapping("/search")
@@ -140,6 +144,43 @@ public class CompanyController {
     public ApiResponse<CompanyResponse> getMyCompany() {
         return ApiResponse.<CompanyResponse>builder()
                 .result(companyService.getMyCompany())
+                .build();
+    }
+
+    @PostMapping("/{id}/upload-logo")
+    public ApiResponse<FileUploadResponse> uploadLogo(@PathVariable Integer id, @RequestParam("file") MultipartFile file) {
+        // Validate file type
+        if (file.isEmpty()) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+        
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+        
+        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
+        if (!FileType.COMPANY_LOGO.isExtensionAllowed(fileExtension)) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+        
+        if (file.getSize() > FileType.COMPANY_LOGO.getMaxFileSize()) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+        
+        // Upload file
+        String logoPath = fileService.uploadFile(file, FileType.COMPANY_LOGO.getDirectory());
+        
+        // Update company logo
+        companyService.updateCompanyLogo(id, logoPath);
+        
+        return ApiResponse.<FileUploadResponse>builder()
+                .result(FileUploadResponse.builder()
+                        .fileName(originalFilename)
+                        .filePath(logoPath)
+                        .fileType(FileType.COMPANY_LOGO)
+                        .fileSize(file.getSize())
+                        .build())
                 .build();
     }
 }

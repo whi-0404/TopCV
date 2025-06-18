@@ -21,4 +21,5 @@ public interface CompanyService {
     void unfollowCompany(Integer companyId);
     boolean isFollowing(Integer companyId);
     CompanyResponse getMyCompany();
+    void updateCompanyLogo(Integer companyId, String logoPath);
 }

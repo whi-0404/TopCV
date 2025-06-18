@@ -59,9 +59,9 @@ const OTPVerificationPage: React.FC = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const handleOTPComplete = async (otpValue: string) => {
+  const handleOTPComplete = (otpValue: string) => {
     setOtp(otpValue);
-    await handleVerifyOTP(otpValue);
+    // Không auto-verify, chỉ set OTP value
   };
 
   const handleVerifyOTP = async (otpValue: string = otp) => {

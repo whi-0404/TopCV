@@ -231,6 +231,10 @@ public class JobPostMapperImpl implements JobPostMapper {
                 .type(jobTypeMapper.toResponse(jobPost.getType()))
                 .logo(jobPost.getCompany().getLogo())
                 .appliedCount(jobPost.getAppliedCount())
+                .salary(jobPost.getSalary())
+                .deadline(jobPost.getDeadline())
+                .status(jobPost.getStatus())
+                .createdAt(jobPost.getCreatedAt())
                 .build();
     }
 }

@@ -126,7 +126,7 @@ const CompanyDetailPage: React.FC = () => {
     );
   }
 
-    return (
+  return (
     <Layout>
       <div className="bg-gray-50">
         {/* Breadcrumb */}
@@ -136,7 +136,7 @@ const CompanyDetailPage: React.FC = () => {
             { label: company.name }
           ]} 
         />
-        
+
         {/* Company Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -145,11 +145,30 @@ const CompanyDetailPage: React.FC = () => {
             <div className="flex-shrink-0">
               <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                 {company.logo ? (
-                  <img
-                    src={company.logo}
-                    alt={company.name}
-                    className="w-full h-full object-cover"
-                  />
+                  <>
+                    <img
+                      src={`http://localhost:8080/TopCV/uploads/${company.logo}`}
+                      alt={company.name}
+                      className="w-full h-full object-cover"
+                      onLoad={() => console.log('Company logo loaded successfully:', company.logo)}
+                      onError={(e) => {
+                        console.error('Company logo failed to load:', company.logo);
+                        console.error('Full URL:', `http://localhost:8080/TopCV/uploads/${company.logo}`);
+                        e.currentTarget.style.display = 'none';
+                        const fallback = document.getElementById('company-logo-fallback');
+                        if (fallback) {
+                          fallback.style.display = 'flex';
+                        }
+                      }}
+                    />
+                    <div 
+                      id="company-logo-fallback"
+                      className="absolute inset-0 w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center" 
+                      style={{ display: 'none' }}
+                    >
+                      <BriefcaseIcon className="w-16 h-16 text-gray-400" />
+                    </div>
+                  </>
                 ) : (
                   <BriefcaseIcon className="w-16 h-16 text-gray-400" />
                 )}
@@ -167,7 +186,7 @@ const CompanyDetailPage: React.FC = () => {
                       <div className="flex items-center gap-1">
                         <MapPinIcon className="w-5 h-5" />
                         <span>{company.address}</span>
-                      </div>
+                    </div>
                     )}
                     
                     {company.website && (
@@ -180,8 +199,8 @@ const CompanyDetailPage: React.FC = () => {
                           className="text-blue-600 hover:underline"
                         >
                           Website
-                        </a>
-                      </div>
+                      </a>
+                    </div>
                     )}
                     
                     {company.employeeRange && (
@@ -225,25 +244,25 @@ const CompanyDetailPage: React.FC = () => {
                   <span className="text-sm">({company.followerCount})</span>
                 </button>
               </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
               {/* Company Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Company Description */}
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Company Description */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-2xl font-semibold mb-4">Giới thiệu công ty</h2>
               <div className="prose max-w-none">
                 <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                   {company.description || 'Chưa có thông tin giới thiệu về công ty.'}
                 </p>
-              </div>
-            </div>
+                  </div>
+                </div>
 
             {/* Company Jobs */}
             <div className="bg-white rounded-lg shadow-sm p-6">
@@ -278,13 +297,13 @@ const CompanyDetailPage: React.FC = () => {
                         <div className="flex items-center gap-1">
                           <MapPinIcon className="w-4 h-4" />
                           <span>{job.location}</span>
-                        </div>
+                    </div>
                         <div className="flex items-center gap-1">
                           <span>Hạn: {formatDeadline(job.deadline)}</span>
-                        </div>
+                </div>
                         <div className="flex items-center gap-1">
                           <span>{job.appliedCount} ứng viên</span>
-                        </div>
+              </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
@@ -303,8 +322,8 @@ const CompanyDetailPage: React.FC = () => {
                   Công ty chưa có vị trí tuyển dụng nào.
                 </div>
               )}
-            </div>
-          </div>
+                        </div>
+                      </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
@@ -315,7 +334,7 @@ const CompanyDetailPage: React.FC = () => {
                 <div className="flex justify-between items-center py-2 hover:bg-gray-50 rounded px-2 -mx-2 transition-colors">
                   <span className="text-gray-600">Quy mô:</span>
                   <span className="font-medium">{company.employeeRange || 'Chưa cập nhật'}</span>
-                </div>
+                    </div>
                 <div className="flex justify-between items-center py-2 hover:bg-gray-50 rounded px-2 -mx-2 transition-colors">
                   <span className="text-gray-600">Việc làm:</span>
                   <span className="font-medium text-blue-600">{company.jobCount} vị trí</span>
@@ -341,7 +360,7 @@ const CompanyDetailPage: React.FC = () => {
                     <span className="font-medium">{company.reviewStats.totalReviews}</span>
                   </div>
                   {company.reviewStats.recommendationRate && (
-                    <div className="flex justify-between">
+                  <div className="flex justify-between">
                       <span className="text-gray-600">Tỷ lệ giới thiệu:</span>
                       <span className="font-medium">{company.reviewStats.recommendationRate}%</span>
                     </div>
@@ -349,9 +368,9 @@ const CompanyDetailPage: React.FC = () => {
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </Layout>
   );

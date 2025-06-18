@@ -88,7 +88,11 @@ public class FileServiceImpl implements FileService {
         }
 
         try {
-            Path path = Paths.get(uploadDir, filePath).normalize();
+            // 🔥 NORMALIZE FILE PATH để handle inconsistent data
+            String normalizedPath = normalizeFilePath(filePath);
+            log.debug("Original path: {}, Normalized path: {}", filePath, normalizedPath);
+            
+            Path path = Paths.get(uploadDir, normalizedPath).normalize();
 
             // Security check: ensure path is within upload directory
             Path uploadPath = Paths.get(uploadDir).normalize();
@@ -98,12 +102,12 @@ public class FileServiceImpl implements FileService {
             }
 
             if (!Files.exists(path)) {
-                log.error("File not found: {}", filePath);
+                log.error("File not found: {} (normalized: {}, full path: {})", filePath, normalizedPath, path);
                 throw new RuntimeException("File not found: " + filePath);
             }
 
             byte[] fileData = Files.readAllBytes(path);
-            log.debug("File read successfully: {} (size: {} bytes)", filePath, fileData.length);
+            log.debug("File read successfully: {} (size: {} bytes)", normalizedPath, fileData.length);
             return fileData;
 
         } catch (IOException e) {
@@ -163,5 +167,37 @@ public class FileServiceImpl implements FileService {
         String cleanFilename = originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
 
         return UUID.randomUUID() + "_" + cleanFilename;
+    }
+
+    /**
+     * Normalize file path để handle inconsistent data từ database
+     * - Nếu path bắt đầu với "uploads/" → remove "uploads/" prefix (vì uploadDir đã chứa "uploads")
+     * - Nếu path bắt đầu với "resume/" → giữ nguyên
+     * - Nếu path chỉ là filename → thêm "resume/"
+     */
+    private String normalizeFilePath(String filePath) {
+        if (filePath == null || filePath.trim().isEmpty()) {
+            return filePath;
+        }
+        
+        String trimmed = filePath.trim();
+        
+        // Case 1: Đã có prefix "uploads/" → REMOVE vì uploadDir đã chứa "uploads"
+        if (trimmed.startsWith("uploads/")) {
+            return trimmed.substring("uploads/".length()); // Remove "uploads/" prefix
+        }
+        
+        // Case 2: Chỉ có "resume/xxx" → giữ nguyên
+        if (trimmed.startsWith("resume/")) {
+            return trimmed;
+        }
+        
+        // Case 3: Chỉ là filename → thêm "resume/"
+        if (!trimmed.contains("/")) {
+            return "resume/" + trimmed;
+        }
+        
+        // Default: giữ nguyên và để system handle
+        return trimmed;
     }
 }

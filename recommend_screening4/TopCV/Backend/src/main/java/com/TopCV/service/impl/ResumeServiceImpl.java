@@ -2,12 +2,14 @@ package com.TopCV.service.impl;
 
 import com.TopCV.dto.response.FileUploadResponse;
 import com.TopCV.dto.response.ResumeResponse;
+import com.TopCV.entity.Application;
 import com.TopCV.entity.Resume;
 import com.TopCV.entity.User;
 import com.TopCV.enums.FileType;
 import com.TopCV.exception.AppException;
 import com.TopCV.exception.ErrorCode;
 import com.TopCV.mapper.ResumeMapper;
+import com.TopCV.repository.ApplicationRepository;
 import com.TopCV.repository.ResumeRepository;
 import com.TopCV.repository.UserRepository;
 import com.TopCV.service.FileService;
@@ -34,6 +36,7 @@ public class ResumeServiceImpl implements ResumeService {
     ResumeRepository resumeRepository;
     UserRepository userRepository;
     ResumeMapper resumeMapper;
+    ApplicationRepository applicationRepository;
 
     @Override
     @Transactional
@@ -243,5 +246,99 @@ public class ResumeServiceImpl implements ResumeService {
             return "";
         }
         return filename.substring(filename.lastIndexOf(".") + 1);
+    }
+
+    // ========================= EMPLOYER METHODS =========================
+    
+    @Override
+    @PreAuthorize("hasRole('EMPLOYER')")
+    public ResumeResponse getCandidateResumeByApplicationId(Integer applicationId) {
+        User employer = getCurrentUser();
+        log.info("🔥 EMPLOYER {} trying to get resume for application: {}", employer.getEmail(), applicationId);
+        
+        // Validate application belongs to employer
+        Application application = getApplicationAndValidateEmployerAccess(applicationId, employer);
+        log.info("🔥 Found application: {}, Resume: {}", application.getId(), application.getResumes() != null ? application.getResumes().getId() : "NULL");
+        
+        if (application.getResumes() == null) {
+            log.error("❌ No resume found for application: {}", applicationId);
+            throw new AppException(ErrorCode.RESUME_NOT_EXISTED);
+        }
+        
+        Resume resume = application.getResumes();
+        log.info("✅ Found resume: ID={}, FileName={}, FilePath={}", 
+                resume.getId(), resume.getOriginalFilename(), resume.getFilePath());
+        return resumeMapper.toResponse(resume);
+    }
+    
+    @Override 
+    @PreAuthorize("hasRole('EMPLOYER')")
+    public byte[] downloadCandidateResume(Integer applicationId) {
+        User employer = getCurrentUser();
+        log.info("🔥 EMPLOYER {} trying to download resume for application: {}", employer.getEmail(), applicationId);
+        
+        // Validate application belongs to employer
+        Application application = getApplicationAndValidateEmployerAccess(applicationId, employer);
+        log.info("🔥 Found application: {}, Resume: {}", application.getId(), application.getResumes() != null ? application.getResumes().getId() : "NULL");
+        
+        if (application.getResumes() == null) {
+            log.error("❌ No resume found for application: {}", applicationId);
+            throw new AppException(ErrorCode.RESUME_NOT_EXISTED);
+        }
+        
+        Resume resume = application.getResumes();
+        log.info("✅ Found resume for download: ID={}, FileName={}, FilePath={}", 
+                resume.getId(), resume.getOriginalFilename(), resume.getFilePath());
+        
+        try {
+            log.info("Employer {} downloading candidate resume for application: {}", 
+                    employer.getEmail(), applicationId);
+            log.info("🔥 DEBUG: Original filePath from DB: '{}'", resume.getFilePath());
+            byte[] fileData = fileService.getFile(resume.getFilePath());
+            log.info("✅ Successfully loaded file data: {} bytes", fileData.length);
+            return fileData;
+        } catch (Exception e) {
+            log.error("Failed to download candidate resume for application {} by employer {}: {}", 
+                    applicationId, employer.getEmail(), e.getMessage(), e);
+            throw new AppException(ErrorCode.RESUME_DOWNLOAD_FAILED);
+        }
+    }
+    
+    /**
+     * Get application and validate employer access
+     */
+    private Application getApplicationAndValidateEmployerAccess(Integer applicationId, User employer) {
+        Application application = applicationRepository.findByIdWithResume(applicationId)
+                .orElseThrow(() -> new AppException(ErrorCode.APPLICATION_NOT_EXISTED));
+        
+        // Verify employer owns the company that posted the job
+        if (!application.getJobPost().getCompany().getUser().getId().equals(employer.getId())) {
+            log.warn("Employer {} attempted to access application {} belonging to different employer", 
+                    employer.getEmail(), applicationId);
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        
+        return application;
+    }
+    
+    // ========================= AI SCREENING METHODS =========================
+    
+    @Override
+    @PreAuthorize("hasRole('USER')")
+    public byte[] downloadResumeForAIScreening(Integer resumeId) {
+        User user = getCurrentUser();
+        log.info("🤖 USER {} downloading resume {} for AI screening", user.getEmail(), resumeId);
+        
+        // Validate resume exists và belongs to user
+        Resume resume = getResumeAndValidateOwnership(resumeId, user);
+        
+        try {
+            byte[] fileData = fileService.getFile(resume.getFilePath());
+            log.info("✅ Successfully loaded resume for AI screening: {} bytes", fileData.length);
+            return fileData;
+        } catch (Exception e) {
+            log.error("❌ Failed to download resume {} for AI screening: {}", resumeId, e.getMessage(), e);
+            throw new AppException(ErrorCode.RESUME_DOWNLOAD_FAILED);
+        }
     }
 }

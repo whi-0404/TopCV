@@ -16,23 +16,66 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // Kiểm tra token từ localStorage khi app khởi động
-    const checkAuthStatus = () => {
+    const checkAuthStatus = async () => {
       const token = localStorage.getItem('access_token');
       const userData = localStorage.getItem('user');
       
       if (token && userData) {
         try {
           const parsedUser = JSON.parse(userData);
-          setUser(parsedUser);
+          
+          // Thử gọi API để validate token
+          try {
+            const userInfoResponse = await userApi.getMyInfo();
+            // Token valid, update user state
+            const userInfo = userInfoResponse.result;
+            const updatedUser: User = {
+              id: userInfo.id,
+              userName: userInfo.userName,
+              email: userInfo.email,
+              fullname: userInfo.fullname,
+              phone: userInfo.phone,
+              address: userInfo.address,
+              avt: userInfo.avt,
+              role: userInfo.role as 'USER' | 'EMPLOYER' | 'ADMIN',
+              isActive: userInfo.isActive,
+              isEmailVerified: userInfo.isEmailVerified,
+              dob: userInfo.dob,
+              createdAt: userInfo.createdAt,
+              updatedAt: userInfo.updatedAt
+            };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
+          } catch (error) {
+            // Token invalid hoặc expired, clear storage
+            console.log('Token invalid, clearing storage');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user');
+            setUser(null);
+          }
         } catch (error) {
           localStorage.removeItem('access_token');
           localStorage.removeItem('user');
+          setUser(null);
         }
       }
       setLoading(false);
     };
 
+    // Lắng nghe event logout từ API interceptor
+    const handleAuthLogout = () => {
+      setUser(null);
+    };
+
     checkAuthStatus();
+    
+    // Add event listener
+    window.addEventListener('auth:logout', handleAuthLogout);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('auth:logout', handleAuthLogout);
+    };
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {

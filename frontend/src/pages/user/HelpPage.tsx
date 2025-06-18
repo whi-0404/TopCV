@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   HomeIcon,
-  UserIcon,
   BriefcaseIcon,
   HeartIcon,
   UserCircleIcon,
@@ -19,25 +18,60 @@ import {
   VideoCameraIcon
 } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { 
+  userApi,
+  type UserResponse
+} from '../../services/api';
 
 const HelpPage: React.FC = () => {
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    // Xóa token/session từ localStorage hoặc sessionStorage
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userInfo');
-    sessionStorage.clear();
+  const { user, logout } = useAuth();
+  
+  // API Data States
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [userInfo, setUserInfo] = useState<UserResponse | null>(null);
     
-    // Chuyển hướng về trang chủ
-    navigate('/');
-  };
+  // Local States
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!user || user.role !== 'USER') {
+      navigate('/auth/login');
+      return;
+    }
+    
+    fetchUserInfo();
+  }, [user, navigate]);
+
+  const fetchUserInfo = async () => {
+    setLoading(true);
+    try {
+      const response = await userApi.getMyInfo();
+      if (response.code === 1000 && response.result) {
+        setUserInfo(response.result);
+      }
+    } catch (err) {
+      console.error('Error fetching user info:', err);
+      setError('Không thể tải thông tin người dùng');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/auth/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   const sidebarItems = [
     { icon: HomeIcon, label: 'Tổng quan', active: false, href: '/user/dashboard' },
-    { icon: UserIcon, label: 'Tin nhắn', badge: '1', active: false, href: '/user/messages' },
     { icon: BriefcaseIcon, label: 'Công việc đã ứng tuyển', href: '/user/applications' },
     { icon: HeartIcon, label: 'Công việc yêu thích', href: '/user/favorites' },
     { icon: UserCircleIcon, label: 'Trang cá nhân', href: '/user/profile' },
@@ -63,7 +97,7 @@ const HelpPage: React.FC = () => {
     {
       id: 'profile',
       title: 'Hồ sơ cá nhân',
-      icon: UserIcon,
+      icon: UserCircleIcon,
       description: 'Tạo và tối ưu hóa hồ sơ của bạn',
       articles: 6
     },
@@ -182,58 +216,26 @@ const HelpPage: React.FC = () => {
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="flex-1">{item.label}</span>
-                  {item.badge && (
-                    <span className="bg-emerald-600 text-white text-xs rounded-full px-2 py-0.5">
-                      {item.badge}
-                    </span>
-                  )}
                 </Link>
               </li>
             ))}
           </ul>
         </nav>
 
-        {/* Settings Section */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
-            CÀI ĐẶT
-          </div>
-          <ul className="space-y-2">
-            <li>
-              <Link
-                to="/user/settings"
-                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-              >
-                <Cog6ToothIcon className="h-5 w-5" />
-                <span>Cài đặt</span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/user/help"
-                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium bg-emerald-50 text-emerald-700 border-r-2 border-emerald-600 transition-colors"
-              >
-                <QuestionMarkCircleIcon className="h-5 w-5" />
-                <span>Trợ giúp</span>
-              </Link>
-            </li>
-          </ul>
-        </div>
-
         {/* User Profile - Sticky at bottom */}
         <div className="sticky bottom-0 bg-white p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3 mb-3">
             <img
-              src="https://via.placeholder.com/40x40?text=NH"
+              src={userInfo?.avt || `https://via.placeholder.com/40x40?text=${userInfo?.fullname?.charAt(0) || 'U'}`}
               alt="User Avatar"
               className="w-10 h-10 rounded-full"
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                Nguyễn Quang Huy
+                {userInfo?.fullname || 'Người dùng'}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                qhi@email.com
+                {userInfo?.email || 'email@example.com'}
               </p>
             </div>
           </div>
@@ -249,6 +251,20 @@ const HelpPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-8">
+        {/* Loading State */}
+        {loading && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 text-blue-600 px-4 py-3 rounded-lg">
+            Đang tải dữ liệu...
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+            {error}
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>

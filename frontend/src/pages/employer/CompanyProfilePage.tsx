@@ -16,17 +16,22 @@ import {
   Cog6ToothIcon,
   QuestionMarkCircleIcon,
   ArrowRightOnRectangleIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  BuildingOffice2Icon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { 
   companyApi, 
   employerApi, 
   type CompanyResponse,
-  type CompanyUpdateRequest
+  type CompanyUpdateRequest,
+  type FileUploadResponse
 } from '../../services/api';
 
 const CompanyProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [company, setCompany] = useState<CompanyResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,27 +41,35 @@ const CompanyProfilePage: React.FC = () => {
   const [formData, setFormData] = useState<CompanyUpdateRequest>({});
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userInfo');
-    sessionStorage.clear();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/auth/employer/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   const sidebarItems = [
-    { icon: HomeIcon, label: 'Tổng quan', active: false, href: '/employer/dashboard' },
-    { icon: BriefcaseIcon, label: 'Tin nhắn', href: '/employer/messages' },
-    { icon: BuildingOfficeIcon, label: 'Hồ sơ công ty', active: true, href: '/employer/company' },
+    { icon: HomeIcon, label: 'Tổng quan', href: '/employer/dashboard' },
+    { icon: BriefcaseIcon, label: 'Danh sách công việc', href: '/employer/jobs' },
     { icon: UsersIcon, label: 'Tất cả ứng viên', href: '/employer/candidates' },
-    { icon: DocumentTextIcon, label: 'Danh sách công việc', href: '/employer/jobs' },
+    { icon: BuildingOfficeIcon, label: 'Hồ sơ công ty', active: true, href: '/employer/company' },
     { icon: Cog6ToothIcon, label: 'Cài đặt', href: '/employer/settings' },
     { icon: QuestionMarkCircleIcon, label: 'Trợ giúp', href: '/employer/help' }
   ];
 
   useEffect(() => {
+    if (!user || user.role !== 'EMPLOYER') {
+      navigate('/auth/employer/login');
+      return;
+    }
+    
     fetchCompanyProfile();
-  }, []);
+  }, [user, navigate]);
 
   const fetchCompanyProfile = async () => {
     setLoading(true);
@@ -166,6 +179,57 @@ const CompanyProfilePage: React.FC = () => {
     setSaveLoading(false);
   };
 
+  const handleLogoUpload = async (file: File) => {
+    if (!company) {
+      alert('Chưa có thông tin công ty');
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      console.log('Uploading logo for company:', company.id);
+      
+      const response = await companyApi.uploadLogo(company.id, file);
+      console.log('Logo uploaded successfully:', response);
+      
+      // Update company state with new logo
+      setCompany(prev => prev ? {
+        ...prev,
+        logo: response.result.filePath
+      } : null);
+      
+      alert('Tải lên logo thành công!');
+    } catch (error: any) {
+      console.error('Error uploading logo:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra khi tải lên logo';
+      alert('Lỗi khi tải lên logo: ' + errorMessage);
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Chỉ hỗ trợ file ảnh định dạng JPG, PNG, SVG');
+      return;
+    }
+
+    // Validate file size (2MB max)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+      alert('Kích thước file không được vượt quá 2MB');
+      return;
+    }
+
+    setLogoFile(file);
+    handleLogoUpload(file);
+  };
+
   if (!user || user.role !== 'EMPLOYER') {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -214,20 +278,24 @@ const CompanyProfilePage: React.FC = () => {
 
         {/* User Profile - Sticky at bottom */}
         <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center space-x-3 mb-4">
-                         <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-               <span className="text-emerald-600 font-semibold text-sm">
-                 {user?.fullname?.charAt(0) || 'U'}
-              </span>
-            </div>
-                         <div className="flex-1">
-               <p className="text-sm font-medium text-gray-900">{user?.fullname || 'User'}</p>
-               <p className="text-xs text-gray-500">{user?.email}</p>
+          <div className="flex items-center space-x-3 mb-3">
+            <img
+              src={user?.avt || `https://via.placeholder.com/40x40?text=${user?.fullname?.charAt(0) || 'E'}`}
+              alt="User Avatar"
+              className="w-10 h-10 rounded-full"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {user?.fullname || 'Nhà tuyển dụng'}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user?.email || 'email@example.com'}
+              </p>
             </div>
           </div>
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+            className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           >
             <ArrowRightOnRectangleIcon className="h-4 w-4" />
             <span>Đăng xuất</span>
@@ -365,18 +433,50 @@ const CompanyProfilePage: React.FC = () => {
                       <div className="relative inline-block">
                         <div className="w-24 h-24 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                           {company.logo ? (
-                            <img
-                              src={company.logo}
-                              alt="Company Logo"
-                              className="w-24 h-24 rounded-lg object-cover"
-                            />
+                            <>
+                              <img
+                                src={`http://localhost:8080/TopCV/uploads/${company.logo}`}
+                                alt="Company Logo"
+                                className="w-24 h-24 rounded-lg object-cover"
+                                onLoad={() => console.log('Logo loaded successfully:', company.logo)}
+                                onError={(e) => {
+                                  console.error('Logo failed to load:', company.logo);
+                                  console.error('Full URL:', `http://localhost:8080/TopCV/uploads/${company.logo}`);
+                                  // Hide image and show fallback
+                                  e.currentTarget.style.display = 'none';
+                                  const fallback = document.getElementById('logo-fallback');
+                                  if (fallback) {
+                                    fallback.style.display = 'flex';
+                                  }
+                                }}
+                              />
+                              <div 
+                                id="logo-fallback"
+                                className="absolute inset-0 bg-emerald-100 rounded-lg flex items-center justify-center" 
+                                style={{ display: 'none' }}
+                              >
+                                <BuildingOfficeIcon className="h-12 w-12 text-emerald-600" />
+                              </div>
+                            </>
                           ) : (
                             <BuildingOfficeIcon className="h-12 w-12 text-emerald-600" />
-                    )}
-                  </div>
-                        <button className="absolute bottom-4 right-4 bg-emerald-600 text-white p-2 rounded-full hover:bg-emerald-700">
-                          <CameraIcon className="h-4 w-4" />
-                        </button>
+                          )}
+                        </div>
+                        <label htmlFor="logo-upload" className="absolute bottom-4 right-4 bg-emerald-600 text-white p-2 rounded-full hover:bg-emerald-700 cursor-pointer transition-colors">
+                          {uploadingLogo ? (
+                            <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                          ) : (
+                            <CameraIcon className="h-4 w-4" />
+                          )}
+                        </label>
+                        <input
+                          id="logo-upload"
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/svg+xml"
+                          onChange={handleLogoChange}
+                          className="hidden"
+                          disabled={uploadingLogo}
+                        />
                       </div>
                       <h3 className="text-xl font-bold text-gray-900">{company.name}</h3>
                       <p className="text-gray-600 mt-2 text-sm line-clamp-3">{company.description}</p>

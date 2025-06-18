@@ -54,10 +54,13 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, redirect to login
+        // Refresh failed, clear storage và dispatch event
         localStorage.removeItem('access_token');
         localStorage.removeItem('user');
-        window.location.href = '/auth/login';
+        
+        // Dispatch custom event để AuthContext có thể handle
+        window.dispatchEvent(new CustomEvent('auth:logout'));
+        
         return Promise.reject(refreshError);
       }
     }
