@@ -47,7 +47,7 @@ TopJob là một hệ thống tuyển dụng thông minh tích hợp AI, cung c�
 *Tìm kiếm công việc thông minh với bộ lọc nâng cao*
 
 ### 🏢 Chi tiết công việc
-
+<img src="docs/images/job_detail.png" alt="Trang chủ TopCV" width="800"/>
 
 *Thông tin chi tiết công việc*
 
