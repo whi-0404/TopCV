@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.TopCV.dto.request.CompanyCreationRequest;
 import com.TopCV.dto.response.CompanyResponse;
 import com.TopCV.entity.Company;
+import com.TopCV.entity.CompanyCategory;
 import com.TopCV.mapper.CompanyMapper;
 
 import java.util.List;

@@ -50,6 +50,7 @@ public class SecurityConfig {
         httpSecurity
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/companies", "/api/v1/companies/search").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/companies/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/job-posts", "/api/v1/job-posts/search").permitAll()

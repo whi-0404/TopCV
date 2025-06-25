@@ -1,5 +1,6 @@
 package com.TopCV.configuration;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -10,17 +11,27 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Configuration
+@Slf4j
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${app.file.upload-dir:uploads}")
+    @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve uploaded CV files as static resources
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath();
+        String uploadUri = uploadPath.toUri().toString();
+
+        // On Windows, toUri() might not add the trailing slash needed by Spring.
+        if (!uploadUri.endsWith("/")) {
+            uploadUri += "/";
+        }
+
+        log.info("Serving static files from resource location: {}", uploadUri);
+
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/")
-                .setCachePeriod(86400); // Cache for 24 hours
+                .addResourceLocations(uploadUri)
+                .setCachePeriod(3600);
     }
 
     @Override

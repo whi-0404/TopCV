@@ -63,3 +63,4 @@ export type {
   FileUploadResponse
 } from './resumeApi'; 
 export * from './aiRecommendationApi'; 
+export * from './jobTypeLevelApi'; 

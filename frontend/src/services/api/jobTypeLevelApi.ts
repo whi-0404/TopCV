@@ -37,6 +37,18 @@ export interface SkillResponse {
   description?: string;
 }
 
+// Company Category Types
+export interface CompanyCategoryRequest {
+  name: string;
+  description?: string;
+}
+
+export interface CompanyCategoryResponse {
+  id: number;
+  name: string;
+  description?: string;
+}
+
 // Job Type API service
 export const jobTypeApi = {
   // POST /api/v1/job-types
@@ -132,6 +144,39 @@ export const skillApi = {
   // DELETE /api/v1/skills/{id}
   deleteSkill: async (id: number): Promise<ApiResponse<string>> => {
     const response = await apiClient.delete(`/skills/${id}`);
+    return response.data;
+  }
+};
+
+// Company Category API service
+export const companyCategoryApi = {
+  // GET /api/v1/company-categories
+  getAllCompanyCategories: async (): Promise<ApiResponse<CompanyCategoryResponse[]>> => {
+    const response = await apiClient.get('/company-categories');
+    return response.data;
+  },
+
+  // GET /api/v1/company-categories/{id}
+  getCompanyCategoryById: async (id: number): Promise<ApiResponse<CompanyCategoryResponse>> => {
+    const response = await apiClient.get(`/company-categories/${id}`);
+    return response.data;
+  },
+
+  // POST /api/v1/company-categories
+  createCompanyCategory: async (data: CompanyCategoryRequest): Promise<ApiResponse<CompanyCategoryResponse>> => {
+    const response = await apiClient.post('/company-categories', data);
+    return response.data;
+  },
+
+  // PUT /api/v1/company-categories/{id}
+  updateCompanyCategory: async (id: number, data: CompanyCategoryRequest): Promise<ApiResponse<CompanyCategoryResponse>> => {
+    const response = await apiClient.put(`/company-categories/${id}`, data);
+    return response.data;
+  },
+
+  // DELETE /api/v1/company-categories/{id}
+  deleteCompanyCategory: async (id: number): Promise<ApiResponse<string>> => {
+    const response = await apiClient.delete(`/company-categories/${id}`);
     return response.data;
   }
 }; 

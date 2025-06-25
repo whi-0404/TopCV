@@ -16,7 +16,11 @@ import {
   ExclamationTriangleIcon,
   ClockIcon,
   UserGroupIcon,
-  CogIcon
+  CogIcon,
+  AcademicCapIcon,
+  TagIcon,
+  Squares2X2Icon,
+  FolderIcon
 } from '@heroicons/react/24/outline';
 import { userApi, companyApi, jobPostApi, applicationApi } from '../../services/api';
 import type { UserResponse, CompanyDashboardResponse, JobPostDashboardResponse, ApplicationResponse } from '../../services/api';
@@ -392,6 +396,34 @@ const AdminDashboard: React.FC = () => {
                   icon={CogIcon}
                   color="text-gray-600"
                   onClick={() => navigate('/admin/settings')}
+                />
+                <QuickAction
+                  title="Quản lý kỹ năng"
+                  description="Thêm, sửa, xoá các kỹ năng ứng viên/công việc"
+                  icon={TagIcon}
+                  color="text-pink-600"
+                  onClick={() => navigate('/admin/skills')}
+                />
+                <QuickAction
+                  title="Quản lý loại công việc"
+                  description="Thêm, sửa, xoá các loại công việc"
+                  icon={Squares2X2Icon}
+                  color="text-yellow-600"
+                  onClick={() => navigate('/admin/job-types')}
+                />
+                <QuickAction
+                  title="Quản lý cấp bậc công việc"
+                  description="Thêm, sửa, xoá các cấp bậc công việc"
+                  icon={AcademicCapIcon}
+                  color="text-blue-500"
+                  onClick={() => navigate('/admin/job-levels')}
+                />
+                <QuickAction
+                  title="Quản lý danh mục công ty"
+                  description="Thêm, sửa, xoá các danh mục công ty"
+                  icon={FolderIcon}
+                  color="text-green-700"
+                  onClick={() => navigate('/admin/company-categories')}
                 />
               </div>
             </div>

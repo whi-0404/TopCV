@@ -41,11 +41,17 @@ import CompaniesManagementPage from './pages/admin/CompaniesManagementPage';
 import JobPostsManagementPage from './pages/admin/JobPostsManagementPage';
 import ApplicationsManagementPage from './pages/admin/ApplicationsManagementPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
+import SkillManagementPage from './pages/admin/SkillManagementPage';
+import JobTypeManagementPage from './pages/admin/JobTypeManagementPage';
+import JobLevelManagementPage from './pages/admin/JobLevelManagementPage';
+import CompanyCategoryManagementPage from './pages/admin/CompanyCategoryManagementPage';
+import ScrollToTop from './components/common/ScrollToTop';
 
 
 function App() {
   return (
     <div className="App">
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePage />} />
         {/* Role Selection */}
@@ -199,6 +205,26 @@ function App() {
         <Route path="/admin/analytics" element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <AnalyticsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/skills" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <SkillManagementPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/job-types" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <JobTypeManagementPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/job-levels" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <JobLevelManagementPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/company-categories" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <CompanyCategoryManagementPage />
           </ProtectedRoute>
         } />
         

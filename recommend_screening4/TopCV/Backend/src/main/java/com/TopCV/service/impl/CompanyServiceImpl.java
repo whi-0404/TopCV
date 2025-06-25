@@ -35,10 +35,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileSystemUtils;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -354,20 +357,14 @@ public class CompanyServiceImpl implements CompanyService {
     @Transactional
     @PreAuthorize("hasRole('EMPLOYER')")
     public void updateCompanyLogo(Integer companyId, String logoPath) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        Company company = companyRepository.findById(companyId)
+        Company company =
+            this.companyRepository
+                .findById(companyId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_EXISTED));
 
-        // Verify that the current user owns this company
-        if (!company.getUser().getId().equals(currentUser.getId())) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
-        }
-
-        // Update logo path
+        // The logoPath from the controller should already be the correct relative path.
+        // No need to prepend "company-logos/" again.
         company.setLogo(logoPath);
-        companyRepository.save(company);
+        this.companyRepository.save(company);
     }
 }

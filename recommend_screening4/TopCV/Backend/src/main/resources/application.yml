@@ -13,8 +13,8 @@ spring:
     name: TopCV
   datasource:
     url: "jdbc:postgresql://localhost:5432/TopCV"
-    username: postgres
-    password: dat12345
+    username: admin
+    password: root
   data:
     redis:
       host: localhost
@@ -25,6 +25,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   mail:
     host: smtp.gmail.com
     port: 587
@@ -54,9 +55,10 @@ app:
   security:
     otp:
       length: 6
-
-file:
-  upload-dir: uploads
+  python_service:
+    url: http://localhost:8000
+  file:
+    upload-dir: uploads
   max-size:
     resume: 10485760
     avatar: 5242880

@@ -24,6 +24,10 @@ public class JobPostResponse {
     String salary;
     String experienceRequired;
     LocalDate deadline;
+    String description;
+    String requirements;
+    String benefits;
+    String workingTime;
     int appliedCount;
     int hiringQuota;
     JobPostStatus status;
