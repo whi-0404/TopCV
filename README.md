@@ -1,4 +1,4 @@
-# 🚀 TopCV - Hệ thống Tuyển dụng Thông minh
+# 🚀 TopJob - Hệ thống Tuyển dụng Thông minh
 
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.4-green.svg)](https://spring.io/projects/spring-boot)
@@ -11,7 +11,7 @@
 
 ## 📋 Mô tả dự án
 
-TopCV là một hệ thống tuyển dụng thông minh tích hợp AI, cung cấp giải pháp toàn diện cho việc kết nối ứng viên và nhà tuyển dụng. Hệ thống bao gồm:
+TopJob là một hệ thống tuyển dụng thông minh tích hợp AI, cung cấp giải pháp toàn diện cho việc kết nối ứng viên và nhà tuyển dụng. Hệ thống bao gồm:
 
 - **Frontend**: Giao diện người dùng hiện đại với React + TypeScript
 - **Backend**: API RESTful với Spring Boot + Java 21
@@ -22,13 +22,13 @@ TopCV là một hệ thống tuyển dụng thông minh tích hợp AI, cung c�
 
 
 ### 🏠 Trang chủ
-<img src="docs/images/home/home_desktop.png" alt="Trang chủ TopCV" width="500"/>
-<img src="docs/images/home/home_desktop_2.png" alt="Trang chủ TopCV" width="500"/>
+<img src="docs/images/home/home_desktop.png" alt="Trang chủ TopCV" width="700"/>
+<img src="docs/images/home/home_desktop_2.png" alt="Trang chủ TopCV" width="700"/>
 
 *Giao diện trang chủ với thiết kế hiện đại và responsive*
 
 ### 🔐 Đăng nhập/Đăng ký
-<img src="docs/images/auth/login_desktop.png" alt="Trang chủ TopCV" width="300"/>
+<img src="docs/images/auth/login_desktop.png" alt="Trang chủ TopCV" width="400"/>
 
 *Hệ thống xác thực an toàn với OTP và JWT*
 
