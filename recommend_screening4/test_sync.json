@@ -1,0 +1,11 @@
+{
+    "job_id": "1",
+    "job_title": "Test Developer",
+    "company_name": "Test Company",
+    "location": "Ha Noi",
+    "description": "Test job description",
+    "requirements": "Test requirements",
+    "benefits": "Test benefits", 
+    "core_skills": "Java, Spring Boot",
+    "experience_required": "2+ years"
+} 

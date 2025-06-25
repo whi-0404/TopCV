@@ -1,0 +1,86 @@
+{
+  "full_name": "NGUYỄN THÀNH LONG",
+  "email": "longlufyy@gmail.com",
+  "phone": "0333903624",
+  "address": "Xuân Dục, Xuân Ninh, Xuân Trường, Nam Định",
+  "job_title": null,
+  "years_experience": null,
+  "current_company": null,
+  "technical_skills": [
+    "Sql server",
+    "ReactJS",
+    "MongoDB",
+    "MySQL",
+    "CSS",
+    "JavaScript",
+    "BootStrap 4",
+    "Git",
+    "NodeJS",
+    "HTML",
+    "VueJS",
+    "Tailwind",
+    "PHP",
+    "Node.Js (Express)"
+  ],
+  "soft_skills": [
+    "làm việc nhóm",
+    "tình nguyện"
+  ],
+  "languages": [],
+  "tools": [],
+  "education_level": "Đại học",
+  "major": "Công Nghệ Thông Tin",
+  "university": "Đại Học Thủy Lợi",
+  "graduation_year": null,
+  "projects": [
+    {
+      "name": "Xây Dựng Website ViVuHaNoi",
+      "description": "Cho phép người dùng xem, tìm kiếm và đặt tour du lịch tại Hà Nội.",
+      "technologies": [
+        "nodeJs",
+        "vueJs",
+        "ﬂowbite"
+      ],
+      "url": "https://github.com/NguyenLong2002/ViVuHaNoi",
+      "start_date": null,
+      "end_date": null
+    },
+    {
+      "name": "Xây Dựng Giao Diện Trang : Starbucks",
+      "description": null,
+      "technologies": [],
+      "url": "https://github.com/NguyenLong2002/Starbucks",
+      "start_date": null,
+      "end_date": null
+    },
+    {
+      "name": "Xây Dựng Giao Diện Trang : Shopee",
+      "description": null,
+      "technologies": [],
+      "url": "https://github.com/NguyenLong2002/shopee_ui",
+      "start_date": null,
+      "end_date": null
+    },
+    {
+      "name": "Xây Dựng Giao Diện Trang : Aptech",
+      "description": null,
+      "technologies": [],
+      "url": "https://github.com/NguyenLong2002/BTTH02",
+      "start_date": null,
+      "end_date": null
+    }
+  ],
+  "desired_position": "Thực tập sinh front-end",
+  "desired_location": null,
+  "work_experience": [
+    {
+      "position": "Thực tập sinh front-end",
+      "company": "Công Ty Cổ Phần Viễn Thông 3G Việt Nam",
+      "duration": null,
+      "description": "- Học và tìm hiểu về : HTML, CSS, Javascript, vuejs \n- Code giao diện : website vnsky.com ",
+      "start_date": "05/03",
+      "end_date": "05/04",
+      "is_current": false
+    }
+  ]
+}
