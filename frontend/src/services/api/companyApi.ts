@@ -1,6 +1,7 @@
 import apiClient from './config';
 import { ApiResponse } from './authApi';
 import { FileUploadResponse } from './resumeApi';
+import { CompanyReviewResponse, CompanyReviewRequest } from '../../types';
 
 // Types dựa trên backend DTOs
 export interface CompanyCreationRequest {
@@ -162,6 +163,39 @@ export const companyApi = {
         'Content-Type': 'multipart/form-data',
       },
     });
+    return response.data;
+  },
+
+  // Company Review APIs
+  // GET /api/v1/companies/{companyId}/reviews
+  getCompanyReviews: async (companyId: number, page: number = 1, size: number = 10): Promise<ApiResponse<PageResponse<CompanyReviewResponse>>> => {
+    const response = await apiClient.get(`/companies/${companyId}/reviews`, {
+      params: { page, size }
+    });
+    return response.data;
+  },
+
+  // POST /api/v1/companies/{companyId}/reviews
+  addCompanyReview: async (companyId: number, data: { rateStar: number; reviewText: string }): Promise<ApiResponse<CompanyReviewResponse>> => {
+    const response = await apiClient.post(`/companies/${companyId}/reviews`, data);
+    return response.data;
+  },
+
+  // PUT /api/v1/companies/{companyId}/reviews
+  updateCompanyReview: async (companyId: number, data: { rateStar: number; reviewText: string }): Promise<ApiResponse<CompanyReviewResponse>> => {
+    const response = await apiClient.put(`/companies/${companyId}/reviews`, data);
+    return response.data;
+  },
+
+  // DELETE /api/v1/companies/{companyId}/reviews/{userId}
+  deleteCompanyReview: async (companyId: number, userId: string): Promise<ApiResponse<string>> => {
+    const response = await apiClient.delete(`/companies/${companyId}/reviews/${userId}`);
+    return response.data;
+  },
+
+  // GET /api/v1/companies/{companyId}/reviews/user
+  getUserReviewForCompany: async (companyId: number): Promise<ApiResponse<CompanyReviewResponse>> => {
+    const response = await apiClient.get(`/companies/${companyId}/reviews/user`);
     return response.data;
   }
 }; 

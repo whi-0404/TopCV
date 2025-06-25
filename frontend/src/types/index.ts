@@ -239,4 +239,19 @@ export interface RegisterData {
 export interface LoginData {
   email: string;
   password: string;
+}
+
+// Company Review Types
+export interface CompanyReviewResponse {
+  userId: string;
+  fullName: string;
+  reviewText: string;
+  rateStar: number;
+  reviewDate: string;
+}
+
+export interface CompanyReviewRequest {
+  companyId: number;
+  rateStar: number;
+  reviewText: string;
 } 
