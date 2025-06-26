@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { refreshAccessToken, isTokenExpiredError } from './authUtils';
 
 // Base URL từ backend Spring Boot
 const API_BASE_URL = 'http://localhost:8080/TopCV/api/v1';
@@ -35,32 +36,27 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Nếu token expired (401) và chưa retry
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Kiểm tra nếu là token expired error và chưa retry
+    if (isTokenExpiredError(error) && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        // Gọi refresh token
-        const refreshResponse = await axios.post(
-          `${API_BASE_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
-
-        const newToken = refreshResponse.data.result.token;
-        localStorage.setItem('access_token', newToken);
-
-        // Retry request với token mới
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return apiClient(originalRequest);
+        // Gọi utility function để refresh token
+        const refreshResult = await refreshAccessToken();
+        
+        if (refreshResult.success && refreshResult.token) {
+          // Cập nhật header cho request gốc
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${refreshResult.token}`;
+          }
+          
+          // Retry request với token mới
+          return apiClient(originalRequest);
+        } else {
+          throw new Error(refreshResult.error || 'Refresh token failed');
+        }
       } catch (refreshError) {
-        // Refresh failed, clear storage và dispatch event
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user');
-        
-        // Dispatch custom event để AuthContext có thể handle
-        window.dispatchEvent(new CustomEvent('auth:logout'));
-        
+        console.error('Refresh token failed in interceptor:', refreshError);
         return Promise.reject(refreshError);
       }
     }

@@ -3,6 +3,7 @@ import { User, AuthContextType, RegisterData } from '../types';
 import { authApi } from '../services/api/authApi';
 import { userApi } from '../services/api/userApi';
 import { employerApi } from '../services/api/employerApi';
+import { refreshAccessToken, handleLogout } from '../services/api/authUtils';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -46,12 +47,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             };
             localStorage.setItem('user', JSON.stringify(updatedUser));
             setUser(updatedUser);
-          } catch (error) {
-            // Token invalid hoặc expired, clear storage
-            console.log('Token invalid, clearing storage');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('user');
-            setUser(null);
+          } catch (error: any) {
+            // Kiểm tra nếu là error code 1103 (EXPIRED_TOKEN), thử refresh
+            if (error.response?.data?.code === 1103) {
+              try {
+                console.log('Token expired, attempting to refresh on app startup...');
+                const refreshResult = await refreshAccessToken();
+                
+                if (refreshResult.success && refreshResult.token) {
+                  // Thử lấy user info lại với token mới
+                  const userInfoResponse = await userApi.getMyInfo();
+                  const userInfo = userInfoResponse.result;
+                  const updatedUser: User = {
+                    id: userInfo.id,
+                    userName: userInfo.userName,
+                    email: userInfo.email,
+                    fullname: userInfo.fullname,
+                    phone: userInfo.phone,
+                    address: userInfo.address,
+                    avt: userInfo.avt,
+                    role: userInfo.role as 'USER' | 'EMPLOYER' | 'ADMIN',
+                    isActive: userInfo.isActive,
+                    isEmailVerified: userInfo.isEmailVerified,
+                    dob: userInfo.dob,
+                    createdAt: userInfo.createdAt,
+                    updatedAt: userInfo.updatedAt
+                  };
+                  localStorage.setItem('user', JSON.stringify(updatedUser));
+                  setUser(updatedUser);
+                  console.log('Token refreshed successfully on app startup');
+                } else {
+                  throw new Error(refreshResult.error || 'Invalid refresh response');
+                }
+              } catch (refreshError) {
+                console.error('Refresh token failed on app startup:', refreshError);
+                // Clear storage nếu refresh thất bại
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('user');
+                setUser(null);
+              }
+            } else {
+              // Token invalid hoặc expired, clear storage
+              console.log('Token invalid, clearing storage');
+              localStorage.removeItem('access_token');
+              localStorage.removeItem('user');
+              setUser(null);
+            }
           }
         } catch (error) {
           localStorage.removeItem('access_token');
@@ -85,8 +126,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authApi.login({ email, password });
       console.log('Login response:', response);
       
-      // Lưu token
+      // Lưu access token
       localStorage.setItem('access_token', response.result.token);
+      
+      // Refresh token sẽ được lưu tự động trong HTTP-only cookie bởi backend
+      console.log('Access token saved, refresh token stored in HTTP-only cookie');
       
       // Lấy user info với token vừa có
       const userInfoResponse = await userApi.getMyInfo();
@@ -155,15 +199,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = async (): Promise<void> => {
-    try {
-      await authApi.logout();
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user');
-      setUser(null);
-    }
+    await handleLogout();
+    setUser(null);
   };
 
   const sendOTP = async (email: string, purpose: 'register' | 'forgot-password'): Promise<void> => {
